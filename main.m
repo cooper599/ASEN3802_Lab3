@@ -13,11 +13,11 @@ airfoil2 = '2421';
 
 N = 50; % Number of Panels for top and bottom each
 c = 10;
-[m,p,t] = extractAirfoilData(airfoil1);
+[m,p,t] = extractAirfoilData(airfoil2);
 xvals = GeometricXValues(N,c); % C is 1
-[x_b,y_b,y_c] = NACA_Airfoils(m,p,t,c,N)
+[x_b,y_b,y_c] = NACA_Airfoils(m,p,t,c,N);
 
-PlotAirfoil(x_b,y_b,y_c)
+PlotAirfoil(x_b,y_b,y_c,c)
 
 
 %% Functions for Part 1
@@ -98,11 +98,13 @@ x_array = (C/2)*cos(Angle_array) + C/2; %This takes the x-projection of each
 
 end
 
-function PlotAirfoil(x_b,y_b,y_c)
+function PlotAirfoil(x_b,y_b,y_c,c)
 %This is just a plot function. As we need more complexity we will add it
 %here. For now it just simplifies calls.
 figure(); hold on;
 plot(x_b,y_b,"Marker",".")
-% plot(y_c/N,'-b')
+plot(x_b(1:50),y_c,'-b')
+xlim([0 c]);
+ylim([-c c]);
 
 end
