@@ -2,9 +2,13 @@
 % Task 1: Create NACA Airfoil Generator, Plot Results
 % Task 2: ...
 % Task 3: ...
-% Author: Cooper, Nathan
+% Author: Cooper, Nathan, Sayer, Xander
 % Date: Mar 31, 2026
 clc; clear all; clc;
+
+%% Task 1, NACA 0021, NACA 2421
+airfoil1 = '0021';
+airfoil2 = '2421';
 
 x = 1:0.1:10;
 m = 0.04; p = 0.4; t = 0.15; c = 10; 
@@ -26,6 +30,14 @@ for i = 1:length(x)
 end
 
 function [m,p,t] = extractAirfoilData(airfoilCode)
+    %{
+    Inputs: 
+        airfoilCode - 4 digit airfoil code as string
+    Outputs:
+        m - max camber
+        p - location of max camber
+        t - max thickness of airfoil
+    %}
     digits = airfoilCode - '0';
     m = digits(1)/100;
     p = digits(2)/10;   
