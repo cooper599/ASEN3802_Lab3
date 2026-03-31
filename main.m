@@ -2,7 +2,6 @@
 % Task 1: Create NACA Airfoil Generator, Plot Results
 % Task 2: ...
 % Task 3: ...
-% Task 4: ...
 % Author: Cooper, Nathan, Sayer, Xander
 % Date: Mar 31, 2026
 clc; clear all; clc;
@@ -15,15 +14,9 @@ x = 1:0.1:10;
 m = 0.04; p = 0.4; t = 0.15; c = 10; 
 
 
-
-function NACA_Airfoils(m,p,t,c,N)
-
-% Calculates the thickness distribution of airfoil
 y_t = (t/0.2)*c * (0.2969*sqrt(x/c) - 0.3515*(x/c).^2 + 0.2843*(x/c).^3 - 0.1036*(x/c).^4);
 
 
-% Finds the mean camber line. Splits it between before the maximum camber
-% position and after. Will go to 0 if there is no camber.
 for i = 1:length(x)
     if x(i) < p*c
 
@@ -35,11 +28,6 @@ for i = 1:length(x)
 
     end
 end
-
-
-end
-
-
 
 function [m,p,t] = extractAirfoilData(airfoilCode)
     %{
