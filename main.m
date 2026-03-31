@@ -5,14 +5,14 @@
 % Task 4: ...
 % Author: Cooper, Nathan, Sayer, Xander
 % Date: Mar 31, 2026
-clc; clear all; clc;
+clc; clear all; close all;
 
 %% Task 1, NACA 0021, NACA 2421
 airfoil1 = '0021';
 airfoil2 = '2421';
 
 N = 50; % Number of Panels for top and bottom each
-c = 1;
+c = 10;
 [m,p,t] = extractAirfoilData(airfoil1);
 xvals = GeometricXValues(N,c); % C is 1
 [x_b,y_b,y_c] = NACA_Airfoils(m,p,t,c,N)
@@ -22,10 +22,10 @@ PlotAirfoil(x_b,y_b,y_c)
 
 %% Functions for Part 1
 function [x_b,y_b,y_c] = NACA_Airfoils(m,p,t,c,N)
-x = linspace(0,1,N);
+x = linspace(0,c,N);
 
 % Calculates the thickness distribution of airfoil
-y_t = (t/0.2)*c * (0.2969*sqrt(x/c) - 0.3515*(x/c).^2 + 0.2843*(x/c).^3 - 0.1036*(x/c).^4);
+y_t = (t*c/0.2)*((0.2969*sqrt(x/c) - 0.1260*(x/c)-0.3515*(x/c).^2 + 0.2843*(x/c).^3 - 0.1036*(x/c).^4));
 
 % Finds the mean camber line. Splits it between before the maximum camber
 % position and after. Will go to 0 if there is no camber.
