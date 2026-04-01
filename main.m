@@ -133,7 +133,7 @@ function PlotAirfoil(x_b,y_b,y_c,x,c,name)
         Plot of Airfoil geometry
     %}
     figure(); hold on; grid on;
-    plot(x_b,y_b,"Marker","."); % Plotting Boundary of Airfoil
+    plot(x_b,y_b,"Marker",".",DisplayName="Airfoil Boundary"); % Plotting Boundary of Airfoil
     % Adding Limits to x and y
     xlim([-0.05*c 1.05*c]);
     ylim([-c c]);
@@ -143,7 +143,7 @@ function PlotAirfoil(x_b,y_b,y_c,x,c,name)
     title("Geometry of " + name + " Airfoil",Interpreter="none");
     % Only plot camber line if airfoil is cambered, Add legend for camber line vs boundary
     if any(y_c) % Runs if any values of y_c not equal to 0
-        plot(x,y_c,'-b'); % Plot camber line with x coordinates from ray generation
-        legend("Airfoil Boundary","Mean Camber Line"); % Adds legend
+        plot(x,y_c,'-b',DisplayName="Mean Camber Line"); % Plot camber line with x coordinates from ray generation
     end
+    legend("show");
 end
