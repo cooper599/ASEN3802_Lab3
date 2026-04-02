@@ -1,6 +1,6 @@
 %% ASEN 3802 - Lab 3 - Main
 % Task 1: Create NACA Airfoil Generator, Plot Results
-% Task 2: ...
+% Task 2: Vortex Panel Method, N Panel Convergence
 % Task 3: ...
 % Task 4: ...
 % Author: Cooper, Nathan, Sayer, Xander
@@ -25,7 +25,7 @@ PlotAirfoil(x_b,y_b,y_c,x,c,airfoil1); % Plot geometry
 [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N);
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
-%% Functions for Part 1
+% Functions for Part 1
 function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
     %{
     Inputs:
@@ -73,9 +73,9 @@ function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
     y_L = y_c - y_t.*cos(xi);
     y_U = y_c + y_t.*cos(xi);
     % Concatenate Upper and Lower in CW Trailing Edge, modify indices so
-    % doesn't double up array values
-    x_b = [fliplr(x_L),x_U(2:end)]; % Flip x_L so that goes from right to left
-    y_b = [fliplr(y_L),y_U(2:end)]; % Flip y_L so matches flipped x_L
+    % doesn't double up array values, flip for correct order
+    x_b = [x_L, fliplr(x_U(1:end-1))]; % Flip x_U so that goes from left to right
+    y_b = [y_L, fliplr(y_U(1:end-1))]; % Flip y_U so matches flipped x_U
 end
 
 function [m,p,t] = extractAirfoilData(airfoilCode)
@@ -108,13 +108,12 @@ function [x_array] = GeometricXValues(Number_of_Panels,C)
 % Author: Sayer Gage
 % Collaborators: Xander Lotito
 % Date: 03/31/26
-
-Number_of_Rays = 2*Number_of_Panels; %The number of rays we have should be
-%equivalent to the number of panels we want. Modified 2*N b/c only had 25
-%per top and bottom before
-Angle = 2*pi / Number_of_Rays; %The equal angle should just be the number of arrays 
+% Modified change from 2pi to pi to get rid of doubling coord error
+Number_of_Rays = Number_of_Panels; %The number of rays we have should be
+%equivalent to the number of panels we want.
+Angle = pi / Number_of_Rays; %The equal angle should just be the number of arrays 
 %divided by the full arc of the circle
-Angle_array = 0:Angle:2*pi; %this is an array describing all the rays, as described
+Angle_array = 0:Angle:pi; %this is an array describing all the rays, as described
 %by their angle clockwise from the TE
 x_array = (C/2)*cos(Angle_array) + C/2; %This takes the x-projection of each
 %ray to get an array of N+1 x points on the x-axis, giving N panels.
@@ -146,4 +145,178 @@ function PlotAirfoil(x_b,y_b,y_c,x,c,name)
         plot(x,y_c,'-b',DisplayName="Mean Camber Line"); % Plot camber line with x coordinates from ray generation
     end
     legend("show");
+end
+
+%% Task 2, Vortex Panel Method
+% Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
+
+% Input parameters for Vortex Panel
+airfoil3 = 'NACA_0012';
+c = 1;
+NumPanels = linspace(10,500,490);
+alpha = 12; % AoA, degrees
+[m,p,t] = extractAirfoilData(airfoil3);
+
+predicted_cl = zeros(1,length(NumPanels));
+% Loop for N panel convergence
+for i = 1:length(NumPanels)
+    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,NumPanels(i));
+    predicted_cl(i) = Vortex_Panel(x_b,y_b,alpha);
+end
+
+% Caluclate "exact" cl with large number of panels, store to save future run time
+% [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,3000);
+% exact_cl = Vortex_Panel(x_b,y_b,alpha);
+exact_cl = 1.438326093800802;
+
+[val, idx] = find(predicted_cl > 0.99*exact_cl,1,"first");
+
+% Plot of predicted cl vs number of panels used for calculation
+figure(); hold on;
+plot(NumPanels,predicted_cl,'b');
+yline(exact_cl,'k');
+yline(1.01*exact_cl,'r--');
+yline(0.99*exact_cl,'r--');
+xline(NumPanels(idx),'g--',LineWidth=2);
+xlabel("Number of Panels (N)");
+ylabel("Predicted Sectional Lift Coefficient (c_l)");
+title("Predicted Sectional Lift Coefficient vs Number of Panels");
+legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
+
+% Print needed info to command window
+fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
+fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",NumPanels(idx));
+
+% Functions for Part 2
+function [CL] = Vortex_Panel(XB,YB,ALPHA)
+% Modified, removed VINF from inputs b/c not used in function
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input:                           %
+%                                  %
+% XB  = Boundary Points x-location %
+% YB  = Boundary Points y-location %
+% VINF  = Free-stream Flow Speed   %
+% ALPHA = AOA                      %
+%                                  %
+% Output:                          %
+%                                  %
+% CL = Sectional Lift Coefficient  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%
+% Convert to Radians %
+%%%%%%%%%%%%%%%%%%%%%%
+
+ALPHA = ALPHA*pi/180;
+
+%%%%%%%%%%%%%%%%%%%%%
+% Compute the Chord %
+%%%%%%%%%%%%%%%%%%%%%
+
+CHORD = max(XB)-min(XB);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Determine the Number of Panels %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+M = max(size(XB,1),size(XB,2))-1;
+MP1 = M+1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Intra-Panel Relationships:                                  %
+%                                                             %
+% Determine the Control Points, Panel Sizes, and Panel Angles %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for I = 1:M
+    IP1 = I+1;
+    X(I) = 0.5*(XB(I)+XB(IP1));
+    Y(I) = 0.5*(YB(I)+YB(IP1));
+    S(I) = sqrt( (XB(IP1)-XB(I))^2 +( YB(IP1)-YB(I))^2 );
+    THETA(I) = atan2( YB(IP1)-YB(I), XB(IP1)-XB(I) );
+    SINE(I) = sin( THETA(I) );
+    COSINE(I) = cos( THETA(I) );
+    RHS(I) = sin( THETA(I)-ALPHA );
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inter-Panel Relationships:             %
+%                                        %
+% Determine the Integrals between Panels %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for I = 1:M
+    for J = 1:M
+        if I == J
+            CN1(I,J) = -1.0;
+            CN2(I,J) = 1.0;
+            CT1(I,J) = 0.5*pi;
+            CT2(I,J) = 0.5*pi;
+        else
+            A = -(X(I)-XB(J))*COSINE(J) - (Y(I)-YB(J))*SINE(J);
+            B = (X(I)-XB(J))^2 + (Y(I)-YB(J))^2;
+            C = sin( THETA(I)-THETA(J) );
+            D = cos( THETA(I)-THETA(J) );
+            E = (X(I)-XB(J))*SINE(J) - (Y(I)-YB(J))*COSINE(J);
+            F = log( 1.0 + S(J)*(S(J)+2*A)/B );
+            G = atan2( E*S(J), B+A*S(J) );
+            P = (X(I)-XB(J)) * sin( THETA(I) - 2*THETA(J) ) ...
+              + (Y(I)-YB(J)) * cos( THETA(I) - 2*THETA(J) );
+            Q = (X(I)-XB(J)) * cos( THETA(I) - 2*THETA(J) ) ...
+              - (Y(I)-YB(J)) * sin( THETA(I) - 2*THETA(J) );
+            CN2(I,J) = D + 0.5*Q*F/S(J) - (A*C+D*E)*G/S(J);
+            CN1(I,J) = 0.5*D*F + C*G - CN2(I,J);
+            CT2(I,J) = C + 0.5*P*F/S(J) + (A*D-C*E)*G/S(J);
+            CT1(I,J) = 0.5*C*F - D*G - CT2(I,J);
+        end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inter-Panel Relationships:           %
+%                                      %
+% Determine the Influence Coefficients %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for I = 1:M
+    AN(I,1) = CN1(I,1);
+    AN(I,MP1) = CN2(I,M);
+    AT(I,1) = CT1(I,1);
+    AT(I,MP1) = CT2(I,M);
+    for J = 2:M
+        AN(I,J) = CN1(I,J) + CN2(I,J-1);
+        AT(I,J) = CT1(I,J) + CT2(I,J-1);
+    end
+end
+AN(MP1,1) = 1.0;
+AN(MP1,MP1) = 1.0;
+for J = 2:M
+    AN(MP1,J) = 0.0;
+end
+RHS(MP1) = 0.0;
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% Solve for the gammas %
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+GAMA = AN\RHS';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Solve for Tangential Veloity and Coefficient of Pressure %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for I = 1:M
+    V(I) = cos( THETA(I)-ALPHA );
+    for J = 1:MP1
+        V(I) = V(I) + AT(I,J)*GAMA(J);
+    end
+    CP(I) = 1.0 - V(I)^2;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Solve for Sectional Coefficient of Lift %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+CIRCULATION = sum(S.*V);
+CL = 2*CIRCULATION/CHORD;
 end
