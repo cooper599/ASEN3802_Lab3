@@ -149,12 +149,12 @@ end
 
 %% Task 2, Vortex Panel Method
 % Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
-p2plot = 0;
+p2plot = 1;
 if p2plot == 1
 % Input parameters for Vortex Panel
 airfoil3 = 'NACA_0012';
 c = 1;
-NumPanels = linspace(10,500,100);
+NumPanels = linspace(10,500,491);
 alpha = 12; % AoA, degrees
 [m,p,t] = extractAirfoilData(airfoil3);
 
@@ -170,23 +170,40 @@ end
 % exact_cl = Vortex_Panel(x_b,y_b,alpha);
 exact_cl = 1.438326093800802;
 
-[val, idx] = find(predicted_cl > 0.99*exact_cl,1,"first");
+% Percent Difference Formula, check if % diff < 1% error
+[val, idx] = find((abs(exact_cl-predicted_cl)./((exact_cl + predicted_cl)./2) .* 100) < 1,1,"first");
 
 % Plot of predicted cl vs number of panels used for calculation
 figure(); hold on;
-plot(NumPanels,predicted_cl,'b');
+plot(2*NumPanels,predicted_cl,'b');
 yline(exact_cl,'k');
 yline(1.01*exact_cl,'r--');
 yline(0.99*exact_cl,'r--');
-xline(NumPanels(idx),'g--',LineWidth=2);
-xlabel("Number of Panels (N)");
+xline(2*NumPanels(idx),'g--',LineWidth=2);
+xlabel("Total Number of Panels (N)");
 ylabel("Predicted Sectional Lift Coefficient (c_l)");
 title("Predicted Sectional Lift Coefficient vs Number of Panels");
 legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
 
 % Print needed info to command window
 fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
-fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",NumPanels(idx));
+fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",2*NumPanels(idx));
+
+% Extracting Data For Table
+% Use 10, 50, 100, 200, 500 (Multiply by 2 for Total Panels)
+% Cl, Num Panels, Relative Error, Min Panels for Convergence (separate)
+Panels = [10, 50, 100, 200, 500];
+TotPanels = zeros(1,5);
+Cls = zeros(1,5);
+RelativeError = zeros(1,5);
+Names = ["Tot Panels","Cl","Relative Error"];
+for i = 1:5
+    idx = find(NumPanels == Panels(i),1,"first");
+    Cls(i) = predicted_cl(idx);
+    TotPanels(i) = Panels(i);
+    RelativeError(i) = (abs(exact_cl-Cls(i))/(exact_cl+Cls(i))/2) * 100; % Convert to %
+end
+T = table(2.*Panels',Cls',RelativeError','VariableNames',Names);
 end
 
 % Functions for Part 2
