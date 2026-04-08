@@ -83,7 +83,7 @@ for i = 1:5
     TotPanels(i) = Panels(i);
     RelativeError(i) = (abs(exact_cl-Cls(i))/(exact_cl+Cls(i))/2) * 100; % Convert to %
 end
-p2table = table(2.*Panels',Cls',RelativeError','VariableNames',Names);
+p2table = table(2.*Panels',Cls',RelativeError','VariableNames',Names)
 end
 minpanels = 76; % Numpanels(idx), hard coded to save time
 
@@ -115,6 +115,7 @@ legend();
 % Tables Needed: Table comparing the estimates of zero lift angle of attack (in degrees) 
 % for all three airfoils. In the table, compare the predicted results from Vortex Panel 
 % and Thin Airfoil Theory with the Experimental Results.
+
 %Table comparing the estimates of the lift slope (in units of /° for all three airfoils. 
 % In the table, compare the predicted results from Vortex Panel Method and 
 % Thin Airfoil Theory with the Experimental results.
@@ -122,7 +123,7 @@ legend();
 % Put in Table form
 % Vortex Panel
 clalpha0.vp = zeros(3,1);
-% Thin Airfoil Theory
+% Thin Airfoil Theory, still need
 clalpha0.tat = zeros(3,1);
 % Experimental
 clalpha0.exp = zeros(3,1);
@@ -132,18 +133,45 @@ for i = 1:length(p3names)-1 % remove 1 later when 0018 uploaded
     % VP Method
     [m,p,t] = extractAirfoilData(tempp3names{i});
     [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,minpanels);
-    clalph0.vp(i) = Vortex_Panel(x_b,y_b,targalpha);
+    % Cl from 2 AoA
+    alpha0 = Vortex_Panel(x_b,y_b,0);
+    alpha5 = Vortex_Panel(x_b,y_b,5);
+    slope = (alpha0-alpha5)/5;
+    clalpha0.vp(i) = -alpha0/slope; % AoA for Cl = 0
     % Experimental
-    [~,idx] = min(abs(p3Airfoils.(p3names(i)).data(1).x - targalpha));
-    clalpha0.exp(i) = p3Airfoils.(p3names(i)).data(1).y(idx);
+    alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+    cl_data = p3Airfoils.(p3names(i)).data(1).y;
+    clalpha0.exp(i) = interp1(cl_data, alpha_data, targalpha, 'linear');
 end
 
 % Combine all data into tables
 t1names = ["Airfoil","Vortex Panel","Thin Airfoil Theory","Experimental"];
-estCl0 = table(p3names',clalpha0.vp,clalpha0.tat,clalpha0.exp,'VariableNames',t1names);
+alphaL0tab = table(p3names',clalpha0.vp,clalpha0.tat,clalpha0.exp,'VariableNames',t1names)
 
 % Table form 
-estLiftSlope = 0;
+clslope.vp = zeros(3,1);
+clslope.tat = zeros(3,1);
+clslope.exp = zeros(3,1);
+
+for i = 1:length(p3names) - 1
+    targalpha = 0;
+    % TaT Const 2pi
+    clslope.tat(i) = (2*pi)*pi/180; % pi/180 = 1°
+    % VP
+    [m,p,t] = extractAirfoilData(tempp3names{i});
+    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,minpanels);
+    cl0 = Vortex_Panel(x_b,y_b,targalpha);
+    cl5 = Vortex_Panel(x_b,y_b,5);
+    clslope.vp(i) = (cl5-cl0)/5;
+    % Exp
+    alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+    cl_data = p3Airfoils.(p3names(i)).data(1).y;
+    idx = (alpha_data >= -5 & alpha_data <= 5); % idk why && didn't work
+    p = polyfit(alpha_data(idx), cl_data(idx), 1);
+    clslope.exp(i) = p(1); % Extract slope (slope,intercept)
+end
+
+estLiftSlope = table(p3names',clslope.vp,clslope.tat,clslope.exp,'VariableNames',t1names)
 
 % Functions for Part 3
 function plotClvsAlphaExp(cl,alpha,name)
