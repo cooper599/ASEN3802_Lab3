@@ -99,7 +99,7 @@ p3Airfoils.(p3names(2)) = NACA0012;
 airfoil4 = 'NACA_0006';
 airfoil5 = 'NACA_0012';
 airfoil6 = 'NACA_0018';
-tempp3names = {airfoil4,airfoil5};
+tempp3names = {airfoil4,airfoil5,airfoil6};
 
 figure(); hold on;
 % Chart data
@@ -128,7 +128,7 @@ clalpha0.tat = zeros(3,1);
 % Experimental
 clalpha0.exp = zeros(3,1);
 
-for i = 1:length(p3names)-1 % remove 1 later when 0018 uploaded
+for i = 1:length(p3names) % remove 1 later when 0018 uploaded
     targalpha = 0;
     % VP Method
     [m,p,t] = extractAirfoilData(tempp3names{i});
@@ -139,9 +139,13 @@ for i = 1:length(p3names)-1 % remove 1 later when 0018 uploaded
     slope = (alpha0-alpha5)/5;
     clalpha0.vp(i) = -alpha0/slope; % AoA for Cl = 0
     % Experimental
-    alpha_data = p3Airfoils.(p3names(i)).data(1).x;
-    cl_data = p3Airfoils.(p3names(i)).data(1).y;
-    clalpha0.exp(i) = interp1(cl_data, alpha_data, targalpha, 'linear');
+    if i ~=3
+        alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+        cl_data = p3Airfoils.(p3names(i)).data(1).y;
+        clalpha0.exp(i) = interp1(cl_data, alpha_data, targalpha, 'linear');
+    else
+        clalpha0.exp(i) = "N/A";
+    end
 end
 
 % Combine all data into tables
@@ -153,7 +157,7 @@ clslope.vp = zeros(3,1);
 clslope.tat = zeros(3,1);
 clslope.exp = zeros(3,1);
 
-for i = 1:length(p3names) - 1
+for i = 1:length(p3names)
     targalpha = 0;
     % TaT Const 2pi
     clslope.tat(i) = (2*pi)*pi/180; % pi/180 = 1°
@@ -164,11 +168,15 @@ for i = 1:length(p3names) - 1
     cl5 = Vortex_Panel(x_b,y_b,5);
     clslope.vp(i) = (cl5-cl0)/5;
     % Exp
-    alpha_data = p3Airfoils.(p3names(i)).data(1).x;
-    cl_data = p3Airfoils.(p3names(i)).data(1).y;
-    idx = (alpha_data >= -5 & alpha_data <= 5); % idk why && didn't work
-    p = polyfit(alpha_data(idx), cl_data(idx), 1);
-    clslope.exp(i) = p(1); % Extract slope (slope,intercept)
+    if i ~= 3
+        alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+        cl_data = p3Airfoils.(p3names(i)).data(1).y;
+        idx = (alpha_data >= -5 & alpha_data <= 5); % idk why && didn't work
+        p = polyfit(alpha_data(idx), cl_data(idx), 1);
+        clslope.exp(i) = p(1); % Extract slope (slope,intercept)
+    else
+        clslope.exp(i) = "N/A";
+    end
 end
 
 estLiftSlope = table(p3names',clslope.vp,clslope.tat,clslope.exp,'VariableNames',t1names)
