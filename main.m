@@ -1,8 +1,8 @@
 %% ASEN 3802 - Lab 3 - Main
 % Task 1: Create NACA Airfoil Generator, Plot Results
 % Task 2: Vortex Panel Method, N Panel Convergence
-% Task 3: ...
-% Task 4: ...
+% Task 3: Symmetric Airfoil Cl vs alpha
+% Task 4: Cambered Airfoil Cl vs alpha
 % Author: Cooper, Nathan, Sayer, Xander
 % Date: Mar 31, 2026
 
@@ -26,6 +26,131 @@ PlotAirfoil(x_b,y_b,y_c,x,c,airfoil1); % Plot geometry
 [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N);
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
+
+%% Task 2, Vortex Panel Method
+% Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
+p2plot = 0;
+if p2plot == 1
+% Input parameters for Vortex Panel
+airfoil3 = 'NACA_0012';
+c = 1;
+NumPanels = linspace(10,500,491);
+alpha = 12; % AoA, degrees
+[m,p,t] = extractAirfoilData(airfoil3);
+
+predicted_cl = zeros(1,length(NumPanels));
+% Loop for N panel convergence
+for i = 1:length(NumPanels)
+    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,NumPanels(i));
+    predicted_cl(i) = Vortex_Panel(x_b,y_b,alpha);
+end
+
+% Caluclate "exact" cl with large number of panels, store to save future run time
+% [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,3000);
+% exact_cl = Vortex_Panel(x_b,y_b,alpha);
+exact_cl = 1.438326093800802;
+
+% Percent Difference Formula, check if % diff < 1% error
+[val, idx] = find((abs(exact_cl-predicted_cl)./((exact_cl + predicted_cl)./2) .* 100) < 1,1,"first");
+
+% Plot of predicted cl vs number of panels used for calculation
+figure(); hold on;
+plot(2*NumPanels,predicted_cl,'b');
+yline(exact_cl,'k');
+yline(1.01*exact_cl,'r--');
+yline(0.99*exact_cl,'r--');
+xline(2*NumPanels(idx),'g--',LineWidth=2);
+xlabel("Total Number of Panels (N)");
+ylabel("Predicted Sectional Lift Coefficient (c_l)");
+title("Predicted Sectional Lift Coefficient vs Number of Panels");
+legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
+
+% Print needed info to command window
+fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
+fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",2*NumPanels(idx));
+
+% Extracting Data For Table
+% Use 10, 50, 100, 200, 500 (Multiply by 2 for Total Panels)
+% Cl, Num Panels, Relative Error, Min Panels for Convergence (separate)
+Panels = [10, 50, 100, 200, 500];
+TotPanels = zeros(1,5);
+Cls = zeros(1,5);
+RelativeError = zeros(1,5);
+Names = ["Tot Panels","Cl","Relative Error"];
+for i = 1:5
+    idx = find(NumPanels == Panels(i),1,"first");
+    Cls(i) = predicted_cl(idx);
+    TotPanels(i) = Panels(i);
+    RelativeError(i) = (abs(exact_cl-Cls(i))/(exact_cl+Cls(i))/2) * 100; % Convert to %
+end
+p2table = table(2.*Panels',Cls',RelativeError','VariableNames',Names);
+end
+minpanels = 76; % Numpanels(idx), hard coded to save time
+
+%% Part 3, Effect of Airfoil Thickness on Lift
+load("NACA0006.mat");
+load("NACA0012.mat");
+% load("NACA0018.mat");
+p3names = ["NACA0006","NACA0012","NACA0018"];
+p3Airfoils.(p3names(1)) = NACA0006;
+p3Airfoils.(p3names(2)) = NACA0012;
+% p3Airfoils.(p3names(3)) = NACA0018;
+% Temp Names for VP loop
+airfoil4 = 'NACA_0006';
+airfoil5 = 'NACA_0012';
+airfoil6 = 'NACA_0018';
+tempp3names = {airfoil4,airfoil5};
+
+figure(); hold on;
+% Chart data
+for i = 1:length(p3names)-1 % remove -1 later when 0018 uploaded
+    plotClvsAlphaExp(p3Airfoils.(p3names(i)).data(1).y,p3Airfoils.(p3names(i)).data(1).x,p3Airfoils.(p3names(i)).name);
+end
+% Calculated data
+xlabel("Angle of Attacks (°)");
+ylabel("Sectional Coefficient of Lift");
+title("Comparison of Airfoil Cl vs Angle of Attack");
+legend();
+
+% Tables Needed: Table comparing the estimates of zero lift angle of attack (in degrees) 
+% for all three airfoils. In the table, compare the predicted results from Vortex Panel 
+% and Thin Airfoil Theory with the Experimental Results.
+%Table comparing the estimates of the lift slope (in units of /° for all three airfoils. 
+% In the table, compare the predicted results from Vortex Panel Method and 
+% Thin Airfoil Theory with the Experimental results.
+
+% Put in Table form
+% Vortex Panel
+clalpha0.vp = zeros(3,1);
+% Thin Airfoil Theory
+clalpha0.tat = zeros(3,1);
+% Experimental
+clalpha0.exp = zeros(3,1);
+
+for i = 1:length(p3names)-1 % remove 1 later when 0018 uploaded
+    targalpha = 0;
+    % VP Method
+    [m,p,t] = extractAirfoilData(tempp3names{i});
+    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,minpanels);
+    clalph0.vp(i) = Vortex_Panel(x_b,y_b,targalpha);
+    % Experimental
+    [~,idx] = min(abs(p3Airfoils.(p3names(i)).data(1).x - targalpha));
+    clalpha0.exp(i) = p3Airfoils.(p3names(i)).data(1).y(idx);
+end
+
+% Combine all data into tables
+t1names = ["Airfoil","Vortex Panel","Thin Airfoil Theory","Experimental"];
+estCl0 = table(p3names',clalpha0.vp,clalpha0.tat,clalpha0.exp,'VariableNames',t1names);
+
+% Table form 
+estLiftSlope = 0;
+
+% Functions for Part 3
+function plotClvsAlphaExp(cl,alpha,name)
+    plot(alpha,cl,"DisplayName",name + " Experimental Data");
+end
+
+%% Functions
 % Functions for Part 1
 function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
     %{
@@ -88,11 +213,11 @@ function [m,p,t] = extractAirfoilData(airfoilCode)
         p - location of max camber
         t - max thickness of airfoil
     %}
-    code = airfoilCode(6:end); % Extract Numbers
+    code = airfoilCode(end-3:end); % Extract Numbers
     digits = code - '0'; % Convert to vector of digits
     m = digits(1)/100; % Calculate max camber
     p = digits(2)/10; % Calculate position of max camber 
-    t = str2double(sprintf('%d%d',digits(3),digits(4)))/100; % Calculate thickness
+    t = str2double(code(3:4))/100; % Calculate thickness
 end
 
 function [x_array] = GeometricXValues(Number_of_Panels,C)
@@ -146,65 +271,6 @@ function PlotAirfoil(x_b,y_b,y_c,x,c,name)
         plot(x,y_c,'-b',DisplayName="Mean Camber Line"); % Plot camber line with x coordinates from ray generation
     end
     legend("show");
-end
-
-%% Task 2, Vortex Panel Method
-% Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
-p2plot = 1;
-if p2plot == 1
-% Input parameters for Vortex Panel
-airfoil3 = 'NACA_0012';
-c = 1;
-NumPanels = linspace(10,500,491);
-alpha = 12; % AoA, degrees
-[m,p,t] = extractAirfoilData(airfoil3);
-
-predicted_cl = zeros(1,length(NumPanels));
-% Loop for N panel convergence
-for i = 1:length(NumPanels)
-    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,NumPanels(i));
-    predicted_cl(i) = Vortex_Panel(x_b,y_b,alpha);
-end
-
-% Caluclate "exact" cl with large number of panels, store to save future run time
-% [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,3000);
-% exact_cl = Vortex_Panel(x_b,y_b,alpha);
-exact_cl = 1.438326093800802;
-
-% Percent Difference Formula, check if % diff < 1% error
-[val, idx] = find((abs(exact_cl-predicted_cl)./((exact_cl + predicted_cl)./2) .* 100) < 1,1,"first");
-
-% Plot of predicted cl vs number of panels used for calculation
-figure(); hold on;
-plot(2*NumPanels,predicted_cl,'b');
-yline(exact_cl,'k');
-yline(1.01*exact_cl,'r--');
-yline(0.99*exact_cl,'r--');
-xline(2*NumPanels(idx),'g--',LineWidth=2);
-xlabel("Total Number of Panels (N)");
-ylabel("Predicted Sectional Lift Coefficient (c_l)");
-title("Predicted Sectional Lift Coefficient vs Number of Panels");
-legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
-
-% Print needed info to command window
-fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
-fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",2*NumPanels(idx));
-
-% Extracting Data For Table
-% Use 10, 50, 100, 200, 500 (Multiply by 2 for Total Panels)
-% Cl, Num Panels, Relative Error, Min Panels for Convergence (separate)
-Panels = [10, 50, 100, 200, 500];
-TotPanels = zeros(1,5);
-Cls = zeros(1,5);
-RelativeError = zeros(1,5);
-Names = ["Tot Panels","Cl","Relative Error"];
-for i = 1:5
-    idx = find(NumPanels == Panels(i),1,"first");
-    Cls(i) = predicted_cl(idx);
-    TotPanels(i) = Panels(i);
-    RelativeError(i) = (abs(exact_cl-Cls(i))/(exact_cl+Cls(i))/2) * 100; % Convert to %
-end
-T = table(2.*Panels',Cls',RelativeError','VariableNames',Names);
 end
 
 % Functions for Part 2
