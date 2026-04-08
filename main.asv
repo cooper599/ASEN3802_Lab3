@@ -17,16 +17,16 @@ c = 1; % Chord length
 
 % Plotting and Calculations for Airfoil 1
 [m,p,t] = extractAirfoilData(airfoil1); % Calc m,p,t
-[x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
+[x_b,y_b,y_c,x,dyc1] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil1); % Plot geometry
 
 % Plotting and Calculations for Airfoil 2
 [m,p,t] = extractAirfoilData(airfoil2);
-[x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N);
+[x_b,y_b,y_c,x,dyc2] = NACA_Airfoils(m,p,t,c,N);
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
 % Functions for Part 1
-function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
+function [x_b,y_b,y_c,x,dyc] = NACA_Airfoils(m,p,t,c,N)
     %{
     Inputs:
         m - max camber
@@ -149,7 +149,11 @@ end
 
 %% Task 2, Vortex Panel Method
 % Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
+<<<<<<< Updated upstream
 p2plot = 1;
+=======
+p2plot = 0;
+>>>>>>> Stashed changes
 if p2plot == 1
 % Input parameters for Vortex Panel
 airfoil3 = 'NACA_0012';
@@ -187,6 +191,7 @@ legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels fo
 
 % Print needed info to command window
 fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
+<<<<<<< Updated upstream
 fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",2*NumPanels(idx));
 
 % Extracting Data For Table
@@ -197,6 +202,9 @@ for i = 1:5
 
 end
 % T = table()
+=======
+fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",NumPanels(idx));
+>>>>>>> Stashed changes
 end
 
 % Functions for Part 2
