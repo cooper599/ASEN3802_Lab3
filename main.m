@@ -29,7 +29,7 @@ PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
 %% Task 2, Vortex Panel Method
 % Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
-p2plot = 0;
+p2plot = 1;
 if p2plot == 1
 % Input parameters for Vortex Panel
 airfoil3 = 'NACA_0012';
