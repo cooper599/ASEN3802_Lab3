@@ -1,10 +1,11 @@
 %% ASEN 3802 - Lab 3 - Main
 % Task 1: Create NACA Airfoil Generator, Plot Results
 % Task 2: Vortex Panel Method, N Panel Convergence
-% Task 3: ...
-% Task 4: ...
+% Task 3: Symmetric Airfoil Cl vs alpha
+% Task 4: Cambered Airfoil Cl vs alpha
 % Author: Cooper, Nathan, Sayer, Xander
 % Date: Mar 31, 2026
+
 clc; clear all; close all;
 
 %% Task 1, NACA 0021, NACA 2421
@@ -17,16 +18,280 @@ c = 1; % Chord length
 
 % Plotting and Calculations for Airfoil 1
 [m,p,t] = extractAirfoilData(airfoil1); % Calc m,p,t
-[x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
+[x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil1); % Plot geometry
 
 % Plotting and Calculations for Airfoil 2
 [m,p,t] = extractAirfoilData(airfoil2);
-[x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N);
+[x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,N);
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
+
+%% Task 2, Vortex Panel Method
+% Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
+p2plot = 1;
+if p2plot == 1
+% Input parameters for Vortex Panel
+airfoil3 = 'NACA_0012';
+c = 1;
+NumPanels = linspace(10,500,491);
+alpha = 12; % AoA, degrees
+[m,p,t] = extractAirfoilData(airfoil3);
+
+predicted_cl = zeros(1,length(NumPanels));
+% Loop for N panel convergence
+for i = 1:length(NumPanels)
+    [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,NumPanels(i));
+    predicted_cl(i) = Vortex_Panel(x_b,y_b,alpha);
+end
+
+% Caluclate "exact" cl with large number of panels, store to save future run time
+% [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,3000);
+% exact_cl = Vortex_Panel(x_b,y_b,alpha);
+exact_cl = 1.438326093800802;
+
+% Percent Difference Formula, check if % diff < 1% error
+[val, idx] = find((abs(exact_cl-predicted_cl)./((exact_cl + predicted_cl)./2) .* 100) < 1,1,"first");
+
+% Plot of predicted cl vs number of panels used for calculation
+figure(); hold on;
+plot(2*NumPanels,predicted_cl,'b');
+yline(exact_cl,'k');
+yline(1.01*exact_cl,'r--');
+yline(0.99*exact_cl,'r--');
+xline(2*NumPanels(idx),'g--',LineWidth=2);
+xlabel("Total Number of Panels (N)");
+ylabel("Predicted Sectional Lift Coefficient (c_l)");
+title("Predicted Sectional Lift Coefficient vs Number of Panels");
+legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
+
+% Print needed info to command window
+fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
+fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",2*NumPanels(idx));
+
+% Extracting Data For Table
+% Use 10, 50, 100, 200, 500 (Multiply by 2 for Total Panels)
+% Cl, Num Panels, Relative Error, Min Panels for Convergence (separate)
+Panels = [10, 50, 100, 200, 500];
+TotPanels = zeros(1,5);
+Cls = zeros(1,5);
+RelativeError = zeros(1,5);
+Names = ["Tot Panels","Cl","Relative Error"];
+for i = 1:5
+    idx = find(NumPanels == Panels(i),1,"first");
+    Cls(i) = predicted_cl(idx);
+    TotPanels(i) = Panels(i);
+    RelativeError(i) = (abs(exact_cl-Cls(i))/(exact_cl+Cls(i))/2) * 100; % Convert to %
+end
+p2table = table(2.*Panels',Cls',RelativeError','VariableNames',Names)
+end
+minpanels = 76; % Numpanels(idx), hard coded to save time
+
+%% Part 3, Effect of Airfoil Thickness on Lift
+load("NACA0006.mat");
+load("NACA0012.mat");
+% load("NACA0018.mat");
+p3names = ["NACA0006","NACA0012","NACA0018"];
+p3Airfoils.(p3names(1)) = NACA0006;
+p3Airfoils.(p3names(2)) = NACA0012;
+% p3Airfoils.(p3names(3)) = NACA0018;
+% Temp Names for VP loop
+airfoil4 = 'NACA_0006';
+airfoil5 = 'NACA_0012';
+airfoil6 = 'NACA_0018';
+tempp3names = {airfoil4,airfoil5,airfoil6};
+colors = {'r','b','k'};
+
+% Thin Airfoil Theory, still need
+clalpha0.tat = zeros(3,1);
+
+% Generating TaT Data
+alphavec = linspace(-10,20,100);
+for i = 1:length(tempp3names)
+    tempclvec = zeros(1,length(alphavec));
+    [m,p,t] = extractAirfoilData(tempp3names{i});
+    [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,minpanels);
+    clalpha0.tat(i) = ZeroLiftAoA(slope,x,c);
+    % Predicted Cl from TaT 2pi(alpha-alphaL=0)
+    for ii = 1:length(alphavec)
+        tempclvec(ii) = 2*pi*deg2rad(alphavec(ii)-clalpha0.tat(i));
+    end
+    TaT.(tempp3names{i}) = tempclvec;
+end
+
+figure(); hold on;
+% Chart data
+for i = 1:length(p3names)
+    % Don't plot 0018 b/c data missing
+    if i ~= 3
+        plotClvsAlphaExp(p3Airfoils.(p3names(i)).data(1).y,p3Airfoils.(p3names(i)).data(1).x,p3Airfoils.(p3names(i)).name,colors{i});
+        plot(alphavec,TaT.(tempp3names{i}),'--','DisplayName',p3Airfoils.(p3names(i)).name + " Thin Airfoil Theory",Color=colors{i});
+    else
+        plot(alphavec,TaT.(tempp3names{i}),'--','DisplayName',"NACA 0018 Thin Airfoil Theory",Color=colors{i});
+    end
+end
+% Calculated data
+xlabel("Angle of Attacks (°)");
+ylabel("Sectional Coefficient of Lift");
+title("Comparison of Airfoil Cl vs Angle of Attack");
+legend(Location="northwest");
+
+% Put in Table form
+% Vortex Panel
+clalpha0.vp = zeros(3,1);
+% Experimental
+clalpha0.exp = zeros(3,1);
+
+for i = 1:length(p3names) % remove 1 later when 0018 uploaded
+    targalpha = 0;
+    % VP Method
+    [m,p,t] = extractAirfoilData(tempp3names{i});
+    [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,minpanels);
+    % Cl from 2 AoA
+    alpha0 = Vortex_Panel(x_b,y_b,0);
+    alpha5 = Vortex_Panel(x_b,y_b,5);
+    slope = (alpha5-alpha0)/5;
+    clalpha0.vp(i) = alpha0/slope; % AoA for Cl = 0
+    % Experimental
+    if i ~=3
+        alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+        cl_data = p3Airfoils.(p3names(i)).data(1).y;
+        clalpha0.exp(i) = interp1(cl_data, alpha_data, targalpha, 'linear');
+    else
+        clalpha0.exp(i) = "N/A";
+    end
+end
+
+% Combine all data into tables
+t1names = ["Airfoil","Vortex Panel","Thin Airfoil Theory","Experimental"];
+alphaL0tab = table(p3names',clalpha0.vp,clalpha0.tat,clalpha0.exp,'VariableNames',t1names)
+
+% Table form 
+clslope.vp = zeros(3,1);
+clslope.tat = zeros(3,1);
+clslope.exp = zeros(3,1);
+
+for i = 1:length(p3names)
+    targalpha = 0;
+    % TaT Const 2pi
+    clslope.tat(i) = (2*pi)*pi/180; % pi/180 = 1°
+    % VP
+    [m,p,t] = extractAirfoilData(tempp3names{i});
+    [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,minpanels);
+    cl0 = Vortex_Panel(x_b,y_b,targalpha);
+    cl5 = Vortex_Panel(x_b,y_b,5);
+    clslope.vp(i) = (cl5-cl0)/5;
+    % Exp
+    if i ~= 3
+        alpha_data = p3Airfoils.(p3names(i)).data(1).x;
+        cl_data = p3Airfoils.(p3names(i)).data(1).y;
+        idx = (alpha_data >= -5 & alpha_data <= 5); % idk why && didn't work
+        p = polyfit(alpha_data(idx), cl_data(idx), 1);
+        clslope.exp(i) = p(1); % Extract slope (slope,intercept)
+    else
+        clslope.exp(i) = "N/A";
+    end
+end
+
+estLiftSlope = table(p3names',clslope.vp,clslope.tat,clslope.exp,'VariableNames',t1names)
+
+%% Part 4, Effect of Airfoil Thickness on Lift
+load("NACA0012.mat");
+load("NACA2412.mat");
+load("NACA4412.mat");
+p4names = ["NACA0012","NACA2412","NACA4412"];
+p4Airfoils.(p4names(1)) = NACA0012;
+p4Airfoils.(p4names(2)) = NACA2412;
+p4Airfoils.(p4names(3)) = NACA4412;
+% Temp Names for VP loop
+airfoil7 = 'NACA_0012';
+airfoil8 = 'NACA_2412';
+airfoil9 = 'NACA_4412';
+tempp4names = {airfoil7,airfoil8,airfoil9};
+
+% Thin Airfoil Theory, still need
+clalpha0.tat = zeros(3,1);
+
+% Generating TaT Data
+alphavec = linspace(-10,20,100);
+for i = 1:length(tempp4names)
+    tempclvec = zeros(1,length(alphavec));
+    [m,p,t] = extractAirfoilData(tempp4names{i});
+    [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,minpanels);
+    clalpha0.tat(i) = ZeroLiftAoA(slope,x,c);
+    % Predicted Cl from TaT 2pi(alpha-alphaL=0)
+    for ii = 1:length(alphavec)
+        tempclvec(ii) = 2*pi*deg2rad(alphavec(ii)-clalpha0.tat(i));
+    end
+    TaT.(tempp4names{i}) = tempclvec;
+end
+
+figure(); hold on;
+% Chart data
+for i = 1:length(p3names)
+    plotClvsAlphaExp(p4Airfoils.(p4names(i)).data(1).y,p4Airfoils.(p4names(i)).data(1).x,p4Airfoils.(p4names(i)).name,colors{i});
+    plot(alphavec,TaT.(tempp4names{i}),'--','DisplayName',p4Airfoils.(p4names(i)).name + " Thin Airfoil Theory",Color=colors{i});
+end
+% Calculated data
+xlabel("Angle of Attacks (°)");
+ylabel("Sectional Coefficient of Lift");
+title("Comparison of Airfoil Cl vs Angle of Attack");
+legend(Location="northwest");
+
+% Put in Table form
+% Vortex Panel
+clalpha0.vp = zeros(3,1);
+% Experimental
+clalpha0.exp = zeros(3,1);
+
+for i = 1:length(p4names) % remove 1 later when 0018 uploaded
+    targalpha = 0;
+    % VP Method
+    [m,p,t] = extractAirfoilData(tempp4names{i});
+    [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,minpanels);
+    % Cl from 2 AoA
+    alpha0 = Vortex_Panel(x_b,y_b,0);
+    alpha5 = Vortex_Panel(x_b,y_b,5);
+    slope = (alpha5-alpha0)/5;
+    clalpha0.vp(i) = -alpha0/slope; % AoA for Cl = 0
+    % Experimental
+    alpha_data = p4Airfoils.(p4names(i)).data(1).x;
+    cl_data = p4Airfoils.(p4names(i)).data(1).y;
+    clalpha0.exp(i) = interp1(cl_data, alpha_data, targalpha, 'linear');
+end
+
+% Combine all data into tables
+t1names = ["Airfoil","Vortex Panel","Thin Airfoil Theory","Experimental"];
+alphaL0tab = table(p4names',clalpha0.vp,clalpha0.tat,clalpha0.exp,'VariableNames',t1names)
+
+% Table form 
+clslope.vp = zeros(3,1);
+clslope.tat = zeros(3,1);
+clslope.exp = zeros(3,1);
+
+for i = 1:length(p4names)
+    targalpha = 0;
+    % TaT Const 2pi
+    clslope.tat(i) = (2*pi)*pi/180; % pi/180 = 1°
+    % VP
+    [m,p,t] = extractAirfoilData(tempp4names{i});
+    [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,minpanels);
+    cl0 = Vortex_Panel(x_b,y_b,targalpha);
+    cl5 = Vortex_Panel(x_b,y_b,5);
+    clslope.vp(i) = (cl5-cl0)/5;
+    % Exp
+    alpha_data = p4Airfoils.(p4names(i)).data(1).x;
+    cl_data = p4Airfoils.(p4names(i)).data(1).y;
+    idx = (alpha_data >= -5 & alpha_data <= 5); % idk why && didn't work
+    p = polyfit(alpha_data(idx), cl_data(idx), 1);
+    clslope.exp(i) = p(1); % Extract slope (slope,intercept)
+end
+
+estLiftSlope = table(p4names',clslope.vp,clslope.tat,clslope.exp,'VariableNames',t1names)
+
+%% Functions
 % Functions for Part 1
-function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
+function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
     %{
     Inputs:
         m - max camber
@@ -39,6 +304,7 @@ function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
         y_b - Y coordinates of boundary
         y_c - Mean camber line y coords
          x  - X coordinates generated by ray method
+      slope - slope of camber line?
     %}
     % Create x value array using ray method
     x = GeometricXValues(N,c);
@@ -76,6 +342,7 @@ function [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,N)
     % doesn't double up array values, flip for correct order
     x_b = [x_L, fliplr(x_U(1:end-1))]; % Flip x_U so that goes from left to right
     y_b = [y_L, fliplr(y_U(1:end-1))]; % Flip y_U so matches flipped x_U
+    slope = dyc;
 end
 
 function [m,p,t] = extractAirfoilData(airfoilCode)
@@ -87,11 +354,11 @@ function [m,p,t] = extractAirfoilData(airfoilCode)
         p - location of max camber
         t - max thickness of airfoil
     %}
-    code = airfoilCode(6:end); % Extract Numbers
+    code = airfoilCode(end-3:end); % Extract Numbers
     digits = code - '0'; % Convert to vector of digits
     m = digits(1)/100; % Calculate max camber
     p = digits(2)/10; % Calculate position of max camber 
-    t = str2double(sprintf('%d%d',digits(3),digits(4)))/100; % Calculate thickness
+    t = str2double(code(3:4))/100; % Calculate thickness
 end
 
 function [x_array] = GeometricXValues(Number_of_Panels,C)
@@ -145,48 +412,6 @@ function PlotAirfoil(x_b,y_b,y_c,x,c,name)
         plot(x,y_c,'-b',DisplayName="Mean Camber Line"); % Plot camber line with x coordinates from ray generation
     end
     legend("show");
-end
-
-%% Task 2, Vortex Panel Method
-% Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
-p2plot = 0;
-if p2plot == 1
-% Input parameters for Vortex Panel
-airfoil3 = 'NACA_0012';
-c = 1;
-NumPanels = linspace(10,500,100);
-alpha = 12; % AoA, degrees
-[m,p,t] = extractAirfoilData(airfoil3);
-
-predicted_cl = zeros(1,length(NumPanels));
-% Loop for N panel convergence
-for i = 1:length(NumPanels)
-    [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,NumPanels(i));
-    predicted_cl(i) = Vortex_Panel(x_b,y_b,alpha);
-end
-
-% Caluclate "exact" cl with large number of panels, store to save future run time
-% [x_b,y_b,y_c,x] = NACA_Airfoils(m,p,t,c,3000);
-% exact_cl = Vortex_Panel(x_b,y_b,alpha);
-exact_cl = 1.438326093800802;
-
-[val, idx] = find(predicted_cl > 0.99*exact_cl,1,"first");
-
-% Plot of predicted cl vs number of panels used for calculation
-figure(); hold on;
-plot(NumPanels,predicted_cl,'b');
-yline(exact_cl,'k');
-yline(1.01*exact_cl,'r--');
-yline(0.99*exact_cl,'r--');
-xline(NumPanels(idx),'g--',LineWidth=2);
-xlabel("Number of Panels (N)");
-ylabel("Predicted Sectional Lift Coefficient (c_l)");
-title("Predicted Sectional Lift Coefficient vs Number of Panels");
-legend("Predicted c_l","Exact c_l","1% Error Bounds","","Min Number of Panels for < 1% Error",Location="southeast");
-
-% Print needed info to command window
-fprintf("Sectional Lift Coefficient (cl) for NACA 0012 at 12 degrees: %.3f \n", exact_cl);
-fprintf("Min Number of Panels Needed for < 1 Percent Error from Exact: %.1f \n",NumPanels(idx));
 end
 
 % Functions for Part 2
@@ -321,4 +546,28 @@ end
 
 CIRCULATION = sum(S.*V);
 CL = 2*CIRCULATION/CHORD;
+end
+
+% Functions for Part 3
+function plotClvsAlphaExp(cl,alpha,name,color)
+    plot(alpha,cl,"DisplayName",name + " Experimental Data",Color=color);
+end
+
+function [ZeroLiftAoA] = ZeroLiftAoA(Slope,x,c)
+%This function numerically integrates the thin airfoil theory equation to
+%find the zero lift angle of attack
+x = fliplr(x); % Gets rid of negative by flipping
+theta_0 = (acos(1-(x.*(2/c))));
+
+%t = cos(theta_0);
+integrand = Slope .* (cos(theta_0) - 1);
+
+Integral = trapz(theta_0,integrand);
+
+% ZeroLiftAoA = -(180/pi)*((-1/pi) .* Integral);
+ZeroLiftAoA = rad2deg((1/pi).*Integral); % got rid of 180/pi and negative
+
+%There is a sign error somewhere in here
+%I put a negative sign above in the last line, but there's no justification
+%for it other than it fixes the sign error.
 end
