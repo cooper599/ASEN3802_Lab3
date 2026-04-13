@@ -7,8 +7,8 @@
 % Task 3: Symmetric Airfoil Cl vs alpha
 % Task 4: Cambered Airfoil Cl vs alpha
 % Author: Cooper, Nathan, Sayer, Xander
-% Date Created: Mar 31, 2026
-% Date Last Updated: Apr 13, 2026
+% Date: Mar 31, 2026
+
 clc; clear all; close all;
 
 %% Part 1: Task 1, NACA 0021, NACA 2421 Plotting Airfoils
@@ -244,8 +244,6 @@ c_t = 0.67; c_r = 1;    % ft
 aero_t = 1; aero_r = 1; % deg
 geo_t = 1; geo_r = 1;   % deg
 N = 67; 
-% test case from dummy variables
-[e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
 
 function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
 % PLLT finds span efficiency factor, coefficient of lift, and induced drag
@@ -253,26 +251,10 @@ function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
 % are listed below and using PLLT, we find what the wing will do. It uses
 % Fourier Series for a finite number of terms, N, and outputs the Fourier
 % coefficients. Using these, we can find Cl, e, and CDi. 
+%
 % Author: Nathan Bidlingmaier
 % Date: 04/12/2026
-%{
-Inputs:
-    b - 
-    a0_t -
-    a0_r - 
-    c_t - chord length of tip
-    c_r - chord length of root
-    aero_t - 
-    aero_r - 
-    geo_t - 
-    geo_r - 
-    N - Number of terms for fourier coefficient calculation
-Outputs:
-    e - Oswald's efficiency factor
-    c_L - coefficient of lift
-    c_Di - coefficient of (induced) drag
-%}
-% Calculate the induced drag coefficient and efficiency factor
+% -------------------------------------------------------------
 i = 1:N;  % makes a vector of length N
 % Converting degrees to radians for consistency
 a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); 
