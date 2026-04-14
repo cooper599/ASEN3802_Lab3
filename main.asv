@@ -263,23 +263,20 @@ c_r_array = linspace(eps,10,num_pts);
 ratio = linspace(eps,1,num_pts);
 c_t_array = ratio .* c_r_array;
 
-% Create Plotting Figure
-figure();
-hold on
 
 for j = 1:length(AR)
 % Clear e_arr 
-e_arr = zeros(1,num_pts);
+e_arr = zeros(1,num_terms);
 delta_arr = e_arr;
 % Iterate over aspect ratios
 AR_it = AR(j);
 % Solve for wingspan off of current AR
 b = AR_it * (c_t_array + c_r_array) / 2;
-    for k = 1:num_pts
-        [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array(k), 0, 0, 0, 0, num_terms);
+    for k = 1:length(num_pts)
+        [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array, 0, 0, 0, 0, num_terms);
         delta_arr(k) = (1 / e_arr(k)) - 1;
     end
-plot(ratio, delta_arr);
+
 end
 
 
