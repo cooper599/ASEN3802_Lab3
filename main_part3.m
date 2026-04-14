@@ -50,12 +50,12 @@ while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
     n_4 = n_4+1;
 end
 
-while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 1
+while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
     [~, c_Di_hundredth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
     n_5 = n_5+1;
 end
 
-while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 0.1
+while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
     [~, c_Di_thousandth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
     n_6 = n_6+1;
 end
