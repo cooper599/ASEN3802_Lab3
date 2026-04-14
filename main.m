@@ -276,12 +276,17 @@ AR_it = AR(j);
 % Solve for wingspan off of current AR
 b = AR_it * (c_t_array + c_r_array) / 2;
     for k = 1:num_pts
-        [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array(k), 0, 0, 0, 0, num_terms);
+        [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array(k), eps, eps, eps, eps, num_terms);
         delta_arr(k) = (1 / e_arr(k)) - 1;
     end
 plot(ratio, delta_arr);
 end
 
+grid on
+title('$\delta$ vs. $\frac{c_t}{c_r}$', 'Interpreter', 'latex')
+xlabel('$\frac{c_t}{c_r}$', 'Interpreter', 'latex');
+ylabel('\delta')
+legend('AR = 4', 'AR = 6', 'AR = 8', 'AR = 10');
 
 
 function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
