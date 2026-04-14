@@ -279,7 +279,7 @@ b = AR_it * (c_t_array + c_r_array) / 2;
         [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array(k), eps, eps, eps, eps, num_terms);
         delta_arr(k) = (1 / e_arr(k)) - 1;
     end
-plot(ratio, delta_arr);
+plot(ratio, delta_arr, LineWidth=2);
 end
 
 grid on
