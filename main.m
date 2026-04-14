@@ -349,7 +349,7 @@ c_L = x(1) * pi * AR; % Calculate Coefficient of Lift
 
 % solving for e
 delta = 0;
-for j = 1:N 
+for j = 2:N 
     n = 2*j - 1;    % Makes it odd
     delta = delta + (n * (x(j)/x(1))^2);
 end
