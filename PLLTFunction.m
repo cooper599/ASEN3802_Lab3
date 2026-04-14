@@ -1,4 +1,4 @@
-function [c_L,c_Di] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
+function [c_L,c_Di,e] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
 % PLLT finds span efficiency factor, coefficient of lift, and induced drag
 % for a given 3D finite wing. It takes in the dimensions of the wing which
 % are listed below and using PLLT, we find what the wing will do. It uses
