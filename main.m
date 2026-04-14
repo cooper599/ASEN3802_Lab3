@@ -258,13 +258,13 @@ function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
 %{
 Inputs:
     b - wing span (ft)
-    a0_t - cross sectional lift slope at lift (/rad)
+    a0_t - cross sectional lift slope at tip (/rad)
     a0_r - Cross sectional lift slope at root (/rad)
     c_t - chord length of tip ft
     c_r - chord length of root ft
     aero_t - zero lift angle of attack at tip (deg)
     aero_r - zero lift angle of attack at root (deg)
-    geo_t - geo angle of attacl at tips (deg)
+    geo_t - geo angle of attack at tips (deg)
     geo_r - geo angle of attack at root (deg)
     N - Number of terms for fourier coefficient calculation
 Outputs:
@@ -289,7 +289,7 @@ alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
 % -------- Creating vector B and matrix A for computations ----------
 B = alpha_geo - alpha_L0; % Alpha effective
 A = ones(N,N);
-row = 1:N;
+% row = 1:N;
 % Finding values of A
 for j = 1:length(i)
     for k = 1:length(i)
