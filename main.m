@@ -276,7 +276,7 @@ Outputs:
 i = 1:N;  % makes a vector of length N
 
 % Converting degrees to radians for consistency
-a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); 
+a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); % Double check 
 geo_t = deg2rad(geo_t); geo_r = deg2rad(geo_r); 
 
 theta_i = i*pi / (2*N);     % Finding theta for each N
