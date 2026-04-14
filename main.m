@@ -21,22 +21,11 @@ c = 1; % Chord length
 
 % Plotting and Calculations for Airfoil 1
 [m,p,t] = extractAirfoilData(airfoil1); % Calc m,p,t
-<<<<<<< HEAD
-[x_b,y_b,y_c,x,dyc1] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
-=======
 [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,N); % Calc geometry
->>>>>>> 6627471ffcd281f833de31d502975be6c03c81d4
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil1); % Plot geometry
 
 % Plotting and Calculations for Airfoil 2
 [m,p,t] = extractAirfoilData(airfoil2);
-<<<<<<< HEAD
-[x_b,y_b,y_c,x,dyc2] = NACA_Airfoils(m,p,t,c,N);
-PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
-
-% Functions for Part 1
-function [x_b,y_b,y_c,x,dyc] = NACA_Airfoils(m,p,t,c,N)
-=======
 [x_b,y_b,y_c,x,~] = NACA_Airfoils(m,p,t,c,N);
 PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
@@ -327,7 +316,6 @@ end
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
->>>>>>> 6627471ffcd281f833de31d502975be6c03c81d4
     %{
     Inputs:
         m - max camber
