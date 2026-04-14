@@ -56,7 +56,7 @@ c_L = x(1) * pi * AR;
 % solving for e
 delta = 0;
 
-for j = 1:N 
+for j = 2:N 
 
     n = 2*j - 1;    % makes it odd
     delta = delta + (n * (x(j)/x(1))^2);
