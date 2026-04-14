@@ -237,18 +237,6 @@ pt4_alphaL0_table = table(p4names',pt4_clalpha0.vp,pt4_clalpha0.tat,pt4_clalpha0
 pt4_dcl_dalpha_estimate = table(p4names',pt4_clslope.vp,pt4_clslope.tat,pt4_clslope.exp,'VariableNames',pt3tableNames)
 
 %% Part 2: Task 1, Prandtl Lifting Line Theory
-% ---------- Dummy variables for now (delete later) -----------
-b = 10;                  % ft
-a0_t = 0; a0_r = 0;     % per radian
-c_t = 0.67; c_r = 1;    % ft
-aero_t = 0; aero_r = 0; % deg
-geo_t = 0; geo_r = 0;   % deg
-N = 67; 
-% test case from dummy variables
-[e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N);
-
-
-%% Part 2 Code
 % Resolution of Plot
 num_pts = 100;
 % Number of PLLT Terms
@@ -277,7 +265,7 @@ AR_it = AR(j);
 b = AR_it * (c_t_array + c_r_array) / 2;
     for k = 1:num_pts
         [e_arr(k), ~, ~] = PLLT(b(k), 2 * pi, 2 * pi, c_t_array(k), c_r_array(k), eps, eps, eps, eps, num_terms);
-        delta_arr(k) = (1 / e_arr(k)) - 2;
+        delta_arr(k) = (1 / e_arr(k)) - 1;
     end
 plot(ratio, delta_arr, LineWidth=2);
 end
