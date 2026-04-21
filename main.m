@@ -359,6 +359,7 @@ end
 %% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
 % 100 Knots, 10 000 ft altitude
 
+
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
     %{
