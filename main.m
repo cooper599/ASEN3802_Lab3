@@ -327,32 +327,32 @@ n_5 = 1;
 n_6 = 1;
 
 while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
-    [c_L_tenth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    [~, c_L_tenth, ~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
     n_1 = n_1+1;
 end
 
 while ((abs(c_L_hundredth - c_L_reference)/c_L_reference)*100) > 1
-    [c_L_hundredth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+[~, c_L_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
     n_2 = n_2+1;
 end
 
 while ((abs(c_L_thousandth - c_L_reference)/c_L_reference)*100) > 0.1
-    [c_L_thousandth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
+    [~, c_L_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
     n_3 = n_3+1;
 end
 
 while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
-    [~, c_Di_tenth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
+    [~, ~,c_Di_tenth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
     n_4 = n_4+1;
 end
 
 while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
-    [~, c_Di_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    [~, ~, c_Di_hundredth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
     n_5 = n_5+1;
 end
 
 while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
-    [~, c_Di_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    [~, ~, c_Di_thousandth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
     n_6 = n_6+1;
 end
 
