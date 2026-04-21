@@ -304,8 +304,9 @@ N_ref = 1000;
 %NACA 0012 (tip) - NACA 2412 (root)
 a0_t = pt4_clslope.vp(1) * (180/pi); % converted to rad
 a0_r = pt4_clslope.vp(2) * (180/pi); % converted to rad
-geo_t = 0; % degrees
-geo_r = 1; % degrees
+alpha = 4;
+geo_t = 0 + alpha; % degrees
+geo_r = 1 + alpha; % degrees
 
 aero_t = pt4_clalpha0.vp(1); % converted to rad
 aero_r = pt4_clalpha0.vp(2); % converted to rad
@@ -674,25 +675,29 @@ Outputs:
 i = 1:N;  % makes a vector of length N
 
 % Converting degrees to radians for consistency
-a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); % Double check 
-geo_t = deg2rad(geo_t); geo_r = deg2rad(geo_r); 
+% a0_t = deg2rad(a0_t); 
+% a0_r = deg2rad(a0_r);
+geo_t = deg2rad(geo_t); 
+geo_r = deg2rad(geo_r); 
 
 theta_i = i*pi / (2*N);     % Finding theta for each N
 
 % Physical geometry to find the following as a function of theta
 c  = c_r  + (c_t  - c_r)  * cos(theta_i);
+a0 = a0_r + (a0_t - a0_r) * cos(theta_i);
 alpha_L0 = aero_r + (aero_t - aero_r) * cos(theta_i);
 alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
 
 % -------- Creating vector B and matrix A for computations ----------
-B = alpha_geo - alpha_L0; % Alpha effective
+B = alpha_geo - alpha_L0; % Alpha effective, change 
 A = ones(N,N);
 % row = 1:N;
 % Finding values of A
 for j = 1:length(i)
     for k = 1:length(i)
         n = 2*k - 1;    % Makes it odd terms only
-        row = (2*b/(pi*c(j)) * sin(n * theta_i(j))) + n*sin(n*theta_i(j))/sin(theta_i(j));
+        % row = (2*b/(pi*c(j)) * sin(n * theta_i(j))) + n*sin(n*theta_i(j))/sin(theta_i(j));
+        row = (4*b/(a0(j)*c(j)) * sin(n * theta_i(j))) + n*sin(n*theta_i(j))/sin(theta_i(j));
         A(j,k) = row; % Create A matrix
     end
 
