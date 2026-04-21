@@ -283,7 +283,77 @@ ylabel('\delta')
 legend('AR = 4', 'AR = 6', 'AR = 8', 'AR = 10');
 
 %% Part 3: Task 1, Table of Cl cdi vs number terms for accuracy
+%{ 
+Function Inputs for reference
+b - wing span (ft)
+a0_t - cross sectional lift slope at tip (/rad)
+a0_r - Cross sectional lift slope at root (/rad)
+c_t - chord length of tip ft
+c_r - chord length of root ft
+aero_t - zero lift angle of attack at tip (deg)
+aero_r - zero lift angle of attack at root (deg)
+geo_t - geo angle of attack at tips (deg)
+geo_r - geo angle of attack at root (deg)
+N - Number of terms for fourier coefficient calculation
+%}
+b = 33 + 4/12;% ft
+c_r = 5 + 4/12; % ft
+c_t = 3 + 8.5/12; % ft
+N_ref = 1000; 
 
+%NACA 0012 (tip) - NACA 2412 (root)
+a0_t = pt4_clslope.vp(1) * (180/pi); % converted to rad
+a0_r = pt4_clslope.vp(2) * (180/pi); % converted to rad
+geo_t = 0; % degrees
+geo_r = 1; % degrees
+
+aero_t = pt4_clalpha0.vp(1); % converted to rad
+aero_r = pt4_clalpha0.vp(2); % converted to rad
+
+% for alpha = 4°
+[c_L_reference, c_Di_reference,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+c_L_tenth = 0;
+c_L_hundredth = 0;
+c_L_thousandth = 0;
+c_Di_tenth = 0;
+c_Di_hundredth = 0;
+c_Di_thousandth = 0;
+n_1 = 1;
+n_2 = 1;
+n_3 = 1;
+n_4 = 1;
+n_5 = 1;
+n_6 = 1;
+
+while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
+    [c_L_tenth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    n_1 = n_1+1;
+end
+
+while ((abs(c_L_hundredth - c_L_reference)/c_L_reference)*100) > 1
+    [c_L_hundredth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+    n_2 = n_2+1;
+end
+
+while ((abs(c_L_thousandth - c_L_reference)/c_L_reference)*100) > 0.1
+    [c_L_thousandth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
+    n_3 = n_3+1;
+end
+
+while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
+    [~, c_Di_tenth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
+    n_4 = n_4+1;
+end
+
+while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
+    [~, c_Di_hundredth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    n_5 = n_5+1;
+end
+
+while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
+    [~, c_Di_thousandth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    n_6 = n_6+1;
+end
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
