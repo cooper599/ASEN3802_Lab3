@@ -301,7 +301,7 @@ c_r = 5 + 4/12; % ft
 c_t = 3 + 8.5/12; % ft
 N_ref = 1000; 
 
-%NACA 0012 (tip) - NACA 2412 (root)
+% NACA 0012 (tip) - NACA 2412 (root)
 a0_t = pt4_clslope.vp(1) * (180/pi); % converted to rad
 a0_r = pt4_clslope.vp(2) * (180/pi); % converted to rad
 alpha = 4;
@@ -319,12 +319,12 @@ c_L_thousandth = 0;
 c_Di_tenth = 0;
 c_Di_hundredth = 0;
 c_Di_thousandth = 0;
-n_1 = 1;
-n_2 = 1;
-n_3 = 1;
-n_4 = 1;
-n_5 = 1;
-n_6 = 1;
+n_1 = 0;
+n_2 = 0;
+n_3 = 0;
+n_4 = 0;
+n_5 = 0;
+n_6 = 0;
 
 while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
     [c_L_tenth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
