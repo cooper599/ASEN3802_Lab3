@@ -365,11 +365,10 @@ q = 0.5 * rho * V^2;
 % Calculations 
 L = c_L_thousandth * q * S;
 Di = c_Di_thousandth * q * S;
-cd = (0.007+.0075)/2; % 0.007 for 0012, 0.0075 for 2412
+cd = (0.007+.0075)/2; % 0.0078 for 0012, 0.0075 for 2412
 Cd = cd + c_Di_thousandth;
 D = Cd * q * S;
 Efficiency = L/D;
-
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
@@ -704,7 +703,7 @@ alpha_L0 = aero_r + (aero_t - aero_r) * cos(theta_i);
 alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
 
 % -------- Creating vector B and matrix A for computations ----------
-B = alpha_geo - alpha_L0; % Alpha effective, change 
+B = alpha_geo - alpha_L0; % Alpha effective, change
 A = ones(N,N);
 % row = 1:N;
 % Finding values of A
