@@ -1,4 +1,10 @@
 %% ASEN 3802 - Lab 3 - Main
+%               Part 3
+% Task 1: Table of Cl, Cdi % errors
+% Task 2: Plots Cl, Cdi vs N
+% Task 3: Table of L, Di, L/D at cruise
+% Task 4: Plot Cd vs alpha
+% Task 5: Plot L/D vs alpha
 %               Part 2 
 % Task 1: Prandtl Lifting Line Theory
 %               Part 1 
@@ -32,8 +38,8 @@ PlotAirfoil(x_b,y_b,y_c,x,c,airfoil2);
 
 %% Part 1: Task 2, Vortex Panel Method
 % Find cl of NACA 0012 at Alpha = 12 deg, Find N panels to converge to < 1% error
-p2plot = 0;
-if p2plot == 1
+p2plot = 1;
+if p2plot == 0
 % Input parameters for Vortex Panel
 airfoil3 = 'NACA_0012';
 c = 1;
@@ -276,74 +282,8 @@ xlabel('$\frac{c_t}{c_r}$', 'Interpreter', 'latex');
 ylabel('\delta')
 legend('AR = 4', 'AR = 6', 'AR = 8', 'AR = 10');
 
+%% Part 3: Task 1, Table of Cl cdi vs number terms for accuracy
 
-function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
-% PLLT finds span efficiency factor, coefficient of lift, and induced drag
-% for a given 3D finite wing. It takes in the dimensions of the wing which
-% are listed below and using PLLT, we find what the wing will do. It uses
-% Fourier Series for a finite number of terms, N, and outputs the Fourier
-% coefficients. Using these, we can find Cl, e, and CDi. 
-% Author: Nathan Bidlingmaier
-% Date: 04/12/2026
-%{
-Inputs:
-    b - wing span (ft)
-    a0_t - cross sectional lift slope at tip (/rad)
-    a0_r - Cross sectional lift slope at root (/rad)
-    c_t - chord length of tip ft
-    c_r - chord length of root ft
-    aero_t - zero lift angle of attack at tip (deg)
-    aero_r - zero lift angle of attack at root (deg)
-    geo_t - geo angle of attack at tips (deg)
-    geo_r - geo angle of attack at root (deg)
-    N - Number of terms for fourier coefficient calculation
-Outputs:
-    e - Oswald's efficiency factor
-    c_L - coefficient of lift
-    c_Di - coefficient of (induced) drag
-%}
-% Calculate the induced drag coefficient and efficiency factor
-i = 1:N;  % makes a vector of length N
-
-% Converting degrees to radians for consistency
-a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); % Double check 
-geo_t = deg2rad(geo_t); geo_r = deg2rad(geo_r); 
-
-theta_i = i*pi / (2*N);     % Finding theta for each N
-
-% Physical geometry to find the following as a function of theta
-c  = c_r  + (c_t  - c_r)  * cos(theta_i);
-alpha_L0 = aero_r + (aero_t - aero_r) * cos(theta_i);
-alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
-
-% -------- Creating vector B and matrix A for computations ----------
-B = alpha_geo - alpha_L0; % Alpha effective
-A = ones(N,N);
-% row = 1:N;
-% Finding values of A
-for j = 1:length(i)
-    for k = 1:length(i)
-        n = 2*k - 1;    % Makes it odd terms only
-        row = (2*b/(pi*c(j)) * sin(n * theta_i(j))) + n*sin(n*theta_i(j))/sin(theta_i(j));
-        A(j,k) = row; % Create A matrix
-    end
-
-end
-x = A \ B';     % outputs the odd Fourier coefficents
-% ------- Using the Fourier coefficients to find CL --------------
-S = b * (c_r+c_t) / 2; % Planform Area
-AR = b^2/S; % Aspect ratio
-c_L = x(1) * pi * AR; % Calculate Coefficient of Lift
-
-% solving for e
-delta = 0;
-for j = 2:N 
-    n = 2*j - 1;    % Makes it odd
-    delta = delta + (n * (x(j)/x(1))^2);
-end
-e = 1/(1+delta); % Efficiency factor 
-c_Di = c_L^2 / (pi * e * AR); % Induced Drag coefficient
-end
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
@@ -632,4 +572,73 @@ theta_0 = (acos(1-(x.*(2/c)))); % Transformation
 integrand = Slope .* (cos(theta_0) - 1); % What being integrated
 Integral = trapz(theta_0,integrand); % Integration
 ZeroLiftAoA = rad2deg((1/pi).*Integral); % got rid of 180/pi and negative
+end
+
+%% Part 2 Functions
+function [e,c_L,c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N)
+% PLLT finds span efficiency factor, coefficient of lift, and induced drag
+% for a given 3D finite wing. It takes in the dimensions of the wing which
+% are listed below and using PLLT, we find what the wing will do. It uses
+% Fourier Series for a finite number of terms, N, and outputs the Fourier
+% coefficients. Using these, we can find Cl, e, and CDi. 
+% Author: Nathan Bidlingmaier
+% Date: 04/12/2026
+%{
+Inputs:
+    b - wing span (ft)
+    a0_t - cross sectional lift slope at tip (/rad)
+    a0_r - Cross sectional lift slope at root (/rad)
+    c_t - chord length of tip ft
+    c_r - chord length of root ft
+    aero_t - zero lift angle of attack at tip (deg)
+    aero_r - zero lift angle of attack at root (deg)
+    geo_t - geo angle of attack at tips (deg)
+    geo_r - geo angle of attack at root (deg)
+    N - Number of terms for fourier coefficient calculation
+Outputs:
+    e - Oswald's efficiency factor
+    c_L - coefficient of lift
+    c_Di - coefficient of (induced) drag
+%}
+% Calculate the induced drag coefficient and efficiency factor
+i = 1:N;  % makes a vector of length N
+
+% Converting degrees to radians for consistency
+a0_t = deg2rad(a0_t); a0_r = deg2rad(a0_r); % Double check 
+geo_t = deg2rad(geo_t); geo_r = deg2rad(geo_r); 
+
+theta_i = i*pi / (2*N);     % Finding theta for each N
+
+% Physical geometry to find the following as a function of theta
+c  = c_r  + (c_t  - c_r)  * cos(theta_i);
+alpha_L0 = aero_r + (aero_t - aero_r) * cos(theta_i);
+alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
+
+% -------- Creating vector B and matrix A for computations ----------
+B = alpha_geo - alpha_L0; % Alpha effective
+A = ones(N,N);
+% row = 1:N;
+% Finding values of A
+for j = 1:length(i)
+    for k = 1:length(i)
+        n = 2*k - 1;    % Makes it odd terms only
+        row = (2*b/(pi*c(j)) * sin(n * theta_i(j))) + n*sin(n*theta_i(j))/sin(theta_i(j));
+        A(j,k) = row; % Create A matrix
+    end
+
+end
+x = A \ B';     % outputs the odd Fourier coefficents
+% ------- Using the Fourier coefficients to find CL --------------
+S = b * (c_r+c_t) / 2; % Planform Area
+AR = b^2/S; % Aspect ratio
+c_L = x(1) * pi * AR; % Calculate Coefficient of Lift
+
+% solving for e
+delta = 0;
+for j = 2:N 
+    n = 2*j - 1;    % Makes it odd
+    delta = delta + (n * (x(j)/x(1))^2);
+end
+e = 1/(1+delta); % Efficiency factor 
+c_Di = c_L^2 / (pi * e * AR); % Induced Drag coefficient
 end
