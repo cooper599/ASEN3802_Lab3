@@ -250,7 +250,7 @@ num_terms = 50;
 % Aspect Ratios Used in 5.20
 AR = 4:2:10;
 % Numerical Stabilizer
-eps = 1e-10; 
+eps = 1e-5; 
 
 % Create Arrays
 c_r_array = linspace(eps,10,num_pts);
@@ -312,7 +312,7 @@ aero_t = pt4_clalpha0.vp(1);
 aero_r = pt4_clalpha0.vp(2);
 
 % for alpha = 4°
-[c_L_reference, c_Di_reference,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+[~,c_L_reference, c_Di_reference] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
 c_L_tenth = 0;
 c_L_hundredth = 0;
 c_L_thousandth = 0;
@@ -692,8 +692,8 @@ i = 1:N;  % makes a vector of length N
 % Converting degrees to radians for consistency
 geo_t = deg2rad(geo_t); 
 geo_r = deg2rad(geo_r); 
-% aero_r = deg2rad(aero_r);
-% aero_t = deg2rad(aero_t);
+aero_r = deg2rad(aero_r) + 1e-12;
+aero_t = deg2rad(aero_t) + 1e-12;
 
 theta_i = i*pi / (2*N);     % Finding theta for each N
 
