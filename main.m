@@ -308,8 +308,8 @@ alpha = 4;
 geo_t = 0 + alpha; % degrees
 geo_r = 1 + alpha; % degrees
 
-aero_t = pt4_clalpha0.vp(1); % converted to rad
-aero_r = pt4_clalpha0.vp(2); % converted to rad
+aero_t = pt4_clalpha0.vp(1);
+aero_r = pt4_clalpha0.vp(2);
 
 % for alpha = 4°
 [c_L_reference, c_Di_reference,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
@@ -355,6 +355,9 @@ while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
     [~, c_Di_thousandth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
     n_6 = n_6+1;
 end
+
+%% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
+% 100 Knots, 10 000 ft altitude
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
@@ -675,10 +678,10 @@ Outputs:
 i = 1:N;  % makes a vector of length N
 
 % Converting degrees to radians for consistency
-% a0_t = deg2rad(a0_t); 
-% a0_r = deg2rad(a0_r);
 geo_t = deg2rad(geo_t); 
 geo_r = deg2rad(geo_r); 
+aero_r = deg2rad(aero_r);
+aero_t = deg2rad(aero_t);
 
 theta_i = i*pi / (2*N);     % Finding theta for each N
 
