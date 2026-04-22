@@ -250,7 +250,7 @@ num_terms = 50;
 % Aspect Ratios Used in 5.20
 AR = 4:2:10;
 % Numerical Stabilizer
-eps = 1e-10; 
+eps = 1e-5; 
 
 % Create Arrays
 c_r_array = linspace(eps,10,num_pts);
@@ -312,7 +312,7 @@ aero_t = pt4_clalpha0.vp(1);
 aero_r = pt4_clalpha0.vp(2);
 
 % for alpha = 4°
-[c_L_reference, c_Di_reference,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+[~,c_L_reference, c_Di_reference] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
 c_L_tenth = 0;
 c_L_hundredth = 0;
 c_L_thousandth = 0;
@@ -327,32 +327,32 @@ n_5 = 1;
 n_6 = 1;
 
 while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
-    [c_L_tenth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    [~, c_L_tenth, ~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
     n_1 = n_1+1;
 end
 
 while ((abs(c_L_hundredth - c_L_reference)/c_L_reference)*100) > 1
-    [c_L_hundredth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+[~, c_L_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
     n_2 = n_2+1;
 end
 
 while ((abs(c_L_thousandth - c_L_reference)/c_L_reference)*100) > 0.1
-    [c_L_thousandth, ~,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
+    [~, c_L_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
     n_3 = n_3+1;
 end
 
 while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
-    [~, c_Di_tenth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
+    [~, ~,c_Di_tenth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
     n_4 = n_4+1;
 end
 
 while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
-    [~, c_Di_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    [~, ~, c_Di_hundredth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
     n_5 = n_5+1;
 end
 
 while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
-    [~, c_Di_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    [~, ~, c_Di_thousandth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
     n_6 = n_6+1;
 end
 
@@ -365,11 +365,67 @@ q = 0.5 * rho * V^2;
 % Calculations 
 L = c_L_thousandth * q * S;
 Di = c_Di_thousandth * q * S;
-cd = (0.007+.0075)/2; % 0.007 for 0012, 0.0075 for 2412
+cd = (0.007+.0075)/2; % 0.0078 for 0012, 0.0075 for 2412
 Cd = cd + c_Di_thousandth;
 D = Cd * q * S;
 Efficiency = L/D;
 
+%% Part 3: Task 4, Total Drag Coefficient vs AoA. Including cd and cdi separetely
+% From AoA ≈ -12 - 12, cl -1.2 to 1.2
+cd_0012 = [0.013,0.010,0.009,0.0075,0.0065,0.006,0.0059,0.0057,0.0059,0.006,0.0063,0.0069,0.007,0.0075,0.0079,0.008,0.0092,0.011,0.00135];
+cd_0012_AoA_arr = linspace(-12,12,length(cd_0012));
+cd_0012_coefs = polyfit(cd_0012_AoA_arr,cd_0012,2);
+
+% From AoA ≈-16 to 16, Cl -1 to 1.6
+cd_2412 = [0.0133,0.010,0.0085,0.0075,0.007,0.0065,0.0063,0.0065,0.0072,0.0079,0.0097,0.018,0.015,0.0175];
+cd_2412_AoA_arr = linspace(-12,12,length(cd_2412));
+cd_2412_coefs = polyfit(cd_2412_AoA_arr,cd_2412,2);
+
+% Combined coefs for average of two sets
+fitting_coefs = (cd_0012_coefs + cd_2412_coefs)/2;
+
+% Fitting just cd for -16 to 16 AoA
+Des_AoA_Arr = linspace(-16,16,50);
+fitted_cds = polyval(fitting_coefs,Des_AoA_Arr);
+
+% Calculated Cdi for same range AoA to 0.1% accuracy
+calc_cdi_arr = zeros(1,length(Des_AoA_Arr));
+cls_arr = zeros(1,length(Des_AoA_Arr)); % For task 5
+for i = 1:length(Des_AoA_Arr)
+    % Modifies necessary variables per loop
+    alpha = Des_AoA_Arr(i);
+    geo_t = 0 + alpha; % degrees
+    geo_r = 1 + alpha; % degrees
+    % gets refference c_Di
+    [~,c_L, c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+    calc_cdi_arr(i) = c_Di;
+    cls_arr(i) = c_L;
+end
+
+% Plotting
+figure(); hold on;
+plot(Des_AoA_Arr,fitted_cds+calc_cdi_arr,lineWidth=2) % Plots tot Cd
+plot(Des_AoA_Arr,fitted_cds,lineWidth=2); % Just cd
+plot(Des_AoA_Arr,calc_cdi_arr,lineWidth=2); % Just cdi
+xlabel("AoA (degrees)");
+ylabel("Drag Coefficient (Cd)");
+legend("Cd = c_d + c_{di} (Total Drag Coefficient)","c_d (Profile Drag Coefficient)","c_{di} (Induced Drag Coefficient)");
+title("Total Drag Coefficient vs Angle of Attack");
+grid on;
+
+%% Part 3: Task 5, Plot of L/D as function of AoA
+totD_arr = (q*S).*(fitted_cds+calc_cdi_arr); % Calculate Total Drag across AoA range
+totL_arr = (q*S).*(cls_arr); % Calculate Total Lift across AoA range
+LDrat_arr = totL_arr./totD_arr; % Calculate L/D per AoA
+
+% Plotting
+figure();
+plot(Des_AoA_Arr,LDrat_arr,lineWidth = 2);
+xlabel("Angle of Attack (Degrees)");
+ylabel("L/D Ratio");
+title("L/D vs Angle of Attack");
+legend("L/D Ratio");
+grid on;
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
@@ -692,8 +748,8 @@ i = 1:N;  % makes a vector of length N
 % Converting degrees to radians for consistency
 geo_t = deg2rad(geo_t); 
 geo_r = deg2rad(geo_r); 
-% aero_r = deg2rad(aero_r);
-% aero_t = deg2rad(aero_t);
+aero_r = deg2rad(aero_r) + 1e-12;
+aero_t = deg2rad(aero_t) + 1e-12;
 
 theta_i = i*pi / (2*N);     % Finding theta for each N
 
@@ -704,7 +760,7 @@ alpha_L0 = aero_r + (aero_t - aero_r) * cos(theta_i);
 alpha_geo = geo_r + (geo_t - geo_r) * cos(theta_i);
 
 % -------- Creating vector B and matrix A for computations ----------
-B = alpha_geo - alpha_L0; % Alpha effective, change 
+B = alpha_geo - alpha_L0; % Alpha effective, change
 A = ones(N,N);
 % row = 1:N;
 % Finding values of A
