@@ -14,7 +14,7 @@
 % Task 4: Cambered Airfoil Cl vs alpha
 % Author: Cooper, Nathan, Sayer, Xander
 % Date Created: Mar 31, 2026
-% Date Last Updated: Apr 13, 2026
+% Date Last Updated: Apr 22, 2026
 clc; clear all; close all;
 
 %% Part 1: Task 1, NACA 0021, NACA 2421 Plotting Airfoils
