@@ -390,26 +390,37 @@ fitted_cds = polyval(fitting_coefs,Des_AoA_Arr);
 
 % Calculated Cdi for same range AoA to 0.1% accuracy
 calc_cdi_arr = zeros(1,length(Des_AoA_Arr));
+cls_arr = zeros(1,length(Des_AoA_Arr)); % For task 5
 for i = 1:length(Des_AoA_Arr)
     % Modifies necessary variables per loop
     alpha = Des_AoA_Arr(i);
     geo_t = 0 + alpha; % degrees
     geo_r = 1 + alpha; % degrees
     % gets refference c_Di
-    [~,~, c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+    [~,c_L, c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
     calc_cdi_arr(i) = c_Di;
+    cls_arr(i) = c_L;
 end
 
 % Plotting
 figure(); hold on; grid on;
-plot(Des_AoA_Arr,fitted_cds+calc_cdi_arrl) % Plots tot Cd
-plot(Des_AoA_Arr,fitted_cds); % Just cd
-plot(Des_AoA_Arr,calc_cdi_arr); % Just cdi
+plot(Des_AoA_Arr,fitted_cds+calc_cdi_arr,lineWidth=2) % Plots tot Cd
+plot(Des_AoA_Arr,fitted_cds,lineWidth=2); % Just cd
+plot(Des_AoA_Arr,calc_cdi_arr,lineWidth=2); % Just cdi
 xlabel("AoA (degrees)");
 ylabel("Drag Coefficient (Cd)");
-legend("Cd = cd + cdi","cd","cdi");
+legend("Cd = c_d + c_{di} (Total Drag Coefficient)","c_d (Profile Drag Coefficient)","c_{di} (Induced Drag Coefficient)");
 title("Total Drag Coefficient vs Angle of Attack");
 
+%% Part 3: Task 5, Plot of L/D as function of AoA
+totD_arr = (q*S).*(fitted_cds+calc_cdi_arr); % Calculate Total Drag across AoA range
+totL_arr = (q*S).*(cls_arr); % Calculate Total Lift across AoA range
+LDrat_arr = totL_arr./totD_arr;
+
+% Plotting
+figure(); grid on;
+plot(Des_AoA_Arr,LDrat_arr,lineWidth = 2);
+xlabel("Angle of ")
 
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
