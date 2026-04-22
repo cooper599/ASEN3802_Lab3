@@ -370,6 +370,47 @@ Cd = cd + c_Di_thousandth;
 D = Cd * q * S;
 Efficiency = L/D;
 
+%% Part 3: Task 4, Total Drag Coefficient vs AoA. Including cd and cdi separetely
+% From AoA ≈ -12 - 12, cl -1.2 to 1.2
+cd_0012 = [0.013,0.010,0.009,0.0075,0.0065,0.006,0.0059,0.0057,0.0059,0.006,0.0063,0.0069,0.007,0.0075,0.0079,0.008,0.0092,0.011,0.00135];
+cd_0012_AoA_arr = linspace(-12,12,length(cd_0012));
+cd_0012_coefs = polyfit(cd_0012_AoA_arr,cd_0012,2);
+
+% From AoA ≈-16 to 16, Cl -1 to 1.6
+cd_2412 = [0.0133,0.010,0.0085,0.0075,0.007,0.0065,0.0063,0.0065,0.0072,0.0079,0.0097,0.018,0.015,0.0175];
+cd_2412_AoA_arr = linspace(-12,12,length(cd_2412));
+cd_2412_coefs = polyfit(cd_2412_AoA_arr,cd_2412,2);
+
+% Combined coefs for average of two sets
+fitting_coefs = (cd_0012_coefs + cd_2412_coefs)/2;
+
+% Fitting just cd for -16 to 16 AoA
+Des_AoA_Arr = linspace(-16,16,50);
+fitted_cds = polyval(fitting_coefs,Des_AoA_Arr);
+
+% Calculated Cdi for same range AoA to 0.1% accuracy
+calc_cdi_arr = zeros(1,length(Des_AoA_Arr));
+for i = 1:length(Des_AoA_Arr)
+    % Modifies necessary variables per loop
+    alpha = Des_AoA_Arr(i);
+    geo_t = 0 + alpha; % degrees
+    geo_r = 1 + alpha; % degrees
+    % gets refference c_Di
+    [~,~, c_Di] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
+    calc_cdi_arr(i) = c_Di;
+end
+
+% Plotting
+figure(); hold on; grid on;
+plot(Des_AoA_Arr,fitted_cds+calc_cdi_arr,lineWidth=2) % Plots tot Cd
+plot(Des_AoA_Arr,fitted_cds,lineWidth=2); % Just cd
+plot(Des_AoA_Arr,calc_cdi_arr,lineWidth=2); % Just cdi
+xlabel("AoA (degrees)");
+ylabel("Drag Coefficient (Cd)");
+legend("Cd = c_d + c_{di} (Total Drag Coefficient)","c_d (Profile Drag Coefficient)","c_{di} (Induced Drag Coefficient)");
+title("Total Drag Coefficient vs Angle of Attack");
+
+
 %% Part 1 Functions
 function [x_b,y_b,y_c,x,slope] = NACA_Airfoils(m,p,t,c,N)
     %{
