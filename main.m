@@ -423,7 +423,7 @@ figure();
 plot(Des_AoA_Arr,LDrat_arr,lineWidth = 2);
 xlabel("Angle of Attack (Degrees)");
 ylabel("L/D Ratio");
-title("L/D vs AoA");
+title("L/D vs Angle of Attack");
 legend("L/D Ratio");
 grid on;
 
