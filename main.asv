@@ -305,8 +305,7 @@ N_guess = 50;
 i = 1;%This and N_guess are for optimization. Its difficult to preallocate
 %arrays for while loops, so we guess that it needs no more than 50 terms,
 %and we will preallocate the arrays to be 1x50 and trim the excess. From
-%practice we know 50 will work up to 0.1% error, but hypothetically one 
-%could increase this number if they wanted less error.
+%practice we know 50 will work
 % NACA 0012 (tip) - NACA 2412 (root)
 a0_t = pt4_clslope.vp(1) * (180/pi); % converted to rad
 a0_r = pt4_clslope.vp(2) * (180/pi); % converted to rad
@@ -316,7 +315,7 @@ geo_r = 1 + alpha; % degrees
 
 aero_t = pt4_clalpha0.vp(1);
 aero_r = pt4_clalpha0.vp(2);
-tic
+
 % for alpha = 4°
 [~,c_L_reference, c_Di_reference] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
 c_L_tenth = 0;
@@ -345,7 +344,7 @@ n_5_array = zeros(1, N_guess);
 n_6_array = zeros(1, N_guess);
 
 while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
-    [~, c_L_tenth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    [c_L_tenth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
     c_L_tenth_array(i) = c_L_tenth;
     n_1_array(i) = n_1;
     i = i+1;
@@ -356,7 +355,7 @@ n_1_array = n_1_array(1:(i-1));
 i=1;
 n_1 = n_1 - 1;
 while ((abs(c_L_hundredth - c_L_reference)/c_L_reference)*100) > 1
-    [~, c_L_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+    [c_L_hundredth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
     c_L_hundredth_array(i) = c_L_hundredth;
     n_2_array(i) = n_2;
     n_2 = n_2+1;
@@ -367,7 +366,7 @@ n_2_array = n_2_array(1:(i-1));
 i=1;
 n_2 = n_2 - 1;
 while ((abs(c_L_thousandth - c_L_reference)/c_L_reference)*100) > 0.1
-    [~, c_L_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
+    [c_L_thousandth, ~,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
     c_L_thousandth_array(i) = c_L_thousandth;
     n_3_array(i) = n_3;
     n_3 = n_3+1;
@@ -378,7 +377,7 @@ n_3_array = n_3_array(1:(i-1));
 i=1;
 n_3 = n_3 - 1;
 while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
-    [~, ~,c_Di_tenth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
+    [~, c_Di_tenth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
     c_Di_tenth_array(i) = c_Di_tenth;
     n_4_array(i) = n_4;
     n_4 = n_4+1;
@@ -389,7 +388,7 @@ n_4_array = n_4_array(1:(i-1));
 i=1;
 n_4 = n_4 - 1;
 while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
-    [~, ~,c_Di_hundredth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    [~, c_Di_hundredth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
     c_Di_hundredth_array(i) = c_Di_hundredth;
     n_5_array(i) = n_5;
     n_5 = n_5+1;
@@ -400,7 +399,7 @@ n_5_array = n_5_array(1:(i-1));
 i=1;
 n_5 = n_5 - 1;
 while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
-    [~, ~,c_Di_thousandth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    [~, c_Di_thousandth,~] = PLLTFunction(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
     c_Di_thousandth_array(i) = c_Di_thousandth;
     n_6_array(i) = n_6;
     n_6 = n_6+1;
@@ -432,7 +431,7 @@ xline(n_6,'g--');
 legend('C_Di 0.1%','C_Di 1%','C_Di 10%','10%','1%','0.1%');
 xlim([0 (n_6 + 1)]);
 
-toc
+
 %% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
 % 100 Knots, 10 000 ft altitude. L = ClqS
 S = b * (c_r+c_t) / 2; % Planform Area, ft^2
