@@ -419,7 +419,7 @@ xline(n_1,'r--');
 xline(n_2,'b--');
 xline(n_3,'g--');
 yline(c_L_reference,'m-');
-legend('C_L 0.1%','C_L 1%','C_L 10%','10%','1%','0.1%','C_l_reference');
+legend('C_L 0.1%','C_L 1%','C_L 10%','10%','1%','0.1%','C_{l_{reference}}');
 xlim([0 (n_3 + 1)]);
 xlabel("Number of Odd Terms");
 ylabel("C_l");
@@ -434,11 +434,11 @@ xline(n_4,'r--');
 xline(n_5,'b--');
 xline(n_6,'g--');
 yline(c_Di_reference,'m-');
-legend('C_Di 0.1%','C_Di 1%','C_Di 10%','10%','1%','0.1%','c_Di_reference');
+legend('C_{Di} 0.1%','C_{Di} 1%','C_{Di} 10%','10%','1%','0.1%','c_{Di_{reference}}');
 xlim([0 (n_6 + 1)]);
 xlabel("Number of Odd Terms");
-ylabel("C_Di");
-title("C_Di vs Number of Odd Fourier Terms");
+ylabel("C_{Di}");
+title("C_{Di} vs Number of Odd Fourier Terms");
 
 
 %% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
