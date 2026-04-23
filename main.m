@@ -316,7 +316,7 @@ geo_r = 1 + alpha; % degrees
 
 aero_t = pt4_clalpha0.vp(1);
 aero_r = pt4_clalpha0.vp(2);
-tic
+
 % for alpha = 4°
 [~,c_L_reference, c_Di_reference] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,N_ref);
 c_L_tenth = 0;
@@ -432,7 +432,7 @@ xline(n_6,'g--');
 legend('C_Di 0.1%','C_Di 1%','C_Di 10%','10%','1%','0.1%');
 xlim([0 (n_6 + 1)]);
 
-toc
+
 %% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
 % 100 Knots, 10 000 ft altitude. L = ClqS
 S = b * (c_r+c_t) / 2; % Planform Area, ft^2
