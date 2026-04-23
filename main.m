@@ -378,7 +378,7 @@ cd_0012_coefs = polyfit(cd_0012_AoA_arr,cd_0012,2);
 
 % From AoA ≈-16 to 16, Cl -1 to 1.6
 cd_2412 = [0.0133,0.010,0.0085,0.0075,0.007,0.0065,0.0063,0.0065,0.0072,0.0079,0.0097,0.018,0.015,0.0175];
-cd_2412_AoA_arr = linspace(-12,12,length(cd_2412));
+cd_2412_AoA_arr = linspace(-16,16,length(cd_2412));
 cd_2412_coefs = polyfit(cd_2412_AoA_arr,cd_2412,2);
 
 % Combined coefs for average of two sets
