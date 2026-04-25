@@ -14,7 +14,7 @@
 % Task 4: Cambered Airfoil Cl vs alpha
 % Author: Cooper, Nathan, Sayer, Xander
 % Date Created: Mar 31, 2026
-% Date Last Updated: Apr 13, 2026
+% Date Last Updated: Apr 22, 2026
 clc; clear all; close all;
 
 %% Part 1: Task 1, NACA 0021, NACA 2421 Plotting Airfoils
@@ -282,7 +282,8 @@ xlabel('$\frac{c_t}{c_r}$', 'Interpreter', 'latex');
 ylabel('\delta')
 legend('AR = 4', 'AR = 6', 'AR = 8', 'AR = 10');
 
-%% Part 3: Task 1, Table of Cl cdi vs number terms for accuracy
+%% Part 3: Task 1, Table of Cl cdi vs number terms for accuracy && Task 2,
+%Plots of Cl and Cdi vs. N odd terms
 %{ 
 Function Inputs for reference
 b - wing span (ft)
@@ -300,7 +301,12 @@ b = 33 + 4/12;% ft
 c_r = 5 + 4/12; % ft
 c_t = 3 + 8.5/12; % ft
 N_ref = 1000; 
-
+N_guess = 50;
+i = 1;%This and N_guess are for optimization. Its difficult to preallocate
+%arrays for while loops, so we guess that it needs no more than 50 terms,
+%and we will preallocate the arrays to be 1x50 and trim the excess. From
+%practice we know 50 will work up to 0.1% error, but hypothetically one 
+%could increase this number if they wanted less error.
 % NACA 0012 (tip) - NACA 2412 (root)
 a0_t = pt4_clslope.vp(1) * (180/pi); % converted to rad
 a0_r = pt4_clslope.vp(2) * (180/pi); % converted to rad
@@ -319,42 +325,121 @@ c_L_thousandth = 0;
 c_Di_tenth = 0;
 c_Di_hundredth = 0;
 c_Di_thousandth = 0;
+c_L_tenth_array = zeros(1, N_guess);
+c_L_hundredth_array = zeros(1, N_guess);
+c_L_thousandth_array = zeros(1, N_guess);
+c_Di_tenth_array = zeros(1, N_guess);
+c_Di_hundredth_array = zeros(1, N_guess);
+c_Di_thousandth_array = zeros(1, N_guess);
 n_1 = 1;
 n_2 = 1;
 n_3 = 1;
 n_4 = 1;
 n_5 = 1;
 n_6 = 1;
+n_1_array = zeros(1, N_guess);
+n_2_array = zeros(1, N_guess);
+n_3_array = zeros(1, N_guess);
+n_4_array = zeros(1, N_guess);
+n_5_array = zeros(1, N_guess);
+n_6_array = zeros(1, N_guess);
 
 while ((abs(c_L_tenth - c_L_reference)/c_L_reference)*100) > 10
-    [~, c_L_tenth, ~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    [~, c_L_tenth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_1);
+    c_L_tenth_array(i) = c_L_tenth;
+    n_1_array(i) = n_1;
+    i = i+1;
     n_1 = n_1+1;
 end
-
+c_L_tenth_array = c_L_tenth_array(1:(i-1));
+n_1_array = n_1_array(1:(i-1));
+i=1;
+n_1 = n_1 - 1;
 while ((abs(c_L_hundredth - c_L_reference)/c_L_reference)*100) > 1
-[~, c_L_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+    [~, c_L_hundredth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_2);
+    c_L_hundredth_array(i) = c_L_hundredth;
+    n_2_array(i) = n_2;
     n_2 = n_2+1;
+    i = i+1;
 end
-
+c_L_hundredth_array = c_L_hundredth_array(1:(i-1));
+n_2_array = n_2_array(1:(i-1));
+i=1;
+n_2 = n_2 - 1;
 while ((abs(c_L_thousandth - c_L_reference)/c_L_reference)*100) > 0.1
     [~, c_L_thousandth,~] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_3);
+    c_L_thousandth_array(i) = c_L_thousandth;
+    n_3_array(i) = n_3;
     n_3 = n_3+1;
+    i = i+1;
 end
-
+c_L_thousandth_array = c_L_thousandth_array(1:(i-1));
+n_3_array = n_3_array(1:(i-1));
+i=1;
+n_3 = n_3 - 1;
 while ((abs(c_Di_tenth - c_Di_reference)/c_Di_reference)*100) > 10
     [~, ~,c_Di_tenth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_4);
+    c_Di_tenth_array(i) = c_Di_tenth;
+    n_4_array(i) = n_4;
     n_4 = n_4+1;
+    i = i+1;
 end
-
+c_Di_tenth_array = c_Di_tenth_array(1:(i-1));
+n_4_array = n_4_array(1:(i-1));
+i=1;
+n_4 = n_4 - 1;
 while ((abs(c_Di_hundredth - c_Di_reference)/c_Di_reference)*100) > 1
-    [~, ~, c_Di_hundredth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    [~, ~,c_Di_hundredth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_5);
+    c_Di_hundredth_array(i) = c_Di_hundredth;
+    n_5_array(i) = n_5;
     n_5 = n_5+1;
+    i = i+1;
 end
-
+c_Di_hundredth_array = c_Di_hundredth_array(1:(i-1));
+n_5_array = n_5_array(1:(i-1));
+i=1;
+n_5 = n_5 - 1;
 while ((abs(c_Di_thousandth - c_Di_reference)/c_Di_reference)*100) > 0.1
-    [~, ~, c_Di_thousandth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    [~, ~,c_Di_thousandth] = PLLT(b,a0_t,a0_r,c_t,c_r,aero_t,aero_r,geo_t,geo_r,n_6);
+    c_Di_thousandth_array(i) = c_Di_thousandth;
+    n_6_array(i) = n_6;
     n_6 = n_6+1;
+    i = i+1;
 end
+c_Di_thousandth_array = c_Di_thousandth_array(1:(i-1));
+n_6_array = n_6_array(1:(i-1));
+i=1;
+n_6 = n_6 - 1;
+figure ()
+hold on;
+plot(n_3_array,c_L_thousandth_array,'g')
+plot(n_2_array,c_L_hundredth_array,'b')
+plot(n_1_array,c_L_tenth_array,'r')
+xline(n_1,'r--');
+xline(n_2,'b--');
+xline(n_3,'g--');
+yline(c_L_reference,'m-');
+legend('C_L 0.1%','C_L 1%','C_L 10%','10%','1%','0.1%','C_{l_{reference}}');
+xlim([0 (n_3 + 1)]);
+xlabel("Number of Odd Terms");
+ylabel("C_l");
+title("C_l vs Number of Odd Fourier Terms");
+
+figure ()
+hold on;
+plot(n_6_array,c_Di_thousandth_array,'g')
+plot(n_5_array,c_Di_hundredth_array,'b')
+plot(n_4_array,c_Di_tenth_array,'r')
+xline(n_4,'r--');
+xline(n_5,'b--');
+xline(n_6,'g--');
+yline(c_Di_reference,'m-');
+legend('C_{Di} 0.1%','C_{Di} 1%','C_{Di} 10%','10%','1%','0.1%','c_{Di_{reference}}');
+xlim([0 (n_6 + 1)]);
+xlabel("Number of Odd Terms");
+ylabel("C_{Di}");
+title("C_{Di} vs Number of Odd Fourier Terms");
+
 
 %% Part 3: Task 3, L, Di, L/D (D = cd + cdi)
 % 100 Knots, 10 000 ft altitude. L = ClqS
@@ -378,7 +463,7 @@ cd_0012_coefs = polyfit(cd_0012_AoA_arr,cd_0012,2);
 
 % From AoA ≈-16 to 16, Cl -1 to 1.6
 cd_2412 = [0.0133,0.010,0.0085,0.0075,0.007,0.0065,0.0063,0.0065,0.0072,0.0079,0.0097,0.018,0.015,0.0175];
-cd_2412_AoA_arr = linspace(-12,12,length(cd_2412));
+cd_2412_AoA_arr = linspace(-16,16,length(cd_2412));
 cd_2412_coefs = polyfit(cd_2412_AoA_arr,cd_2412,2);
 
 % Combined coefs for average of two sets
